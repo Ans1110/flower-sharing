@@ -1,20 +1,19 @@
 import { redirect } from "react-router";
 import { toast } from "sonner";
 import { create } from "zustand";
+import type { UserType } from "@/types/auth";
 
 type AuthStateType = {
   token: string | null;
-  role: string | null;
+  user: UserType | null;
   setToken: (token: string | null) => void;
+  setUser: (user: UserType | null) => void;
   logout: () => void;
-  userId: number | null;
-  setUserId: (userId: number | null) => void;
 };
 
 const useAuthStore = create<AuthStateType>((set) => ({
   token: null,
-  role: null,
-  userId: null,
+  user: null,
   setToken: (token) => {
     if (token) {
       localStorage.setItem("token", token);
@@ -23,19 +22,19 @@ const useAuthStore = create<AuthStateType>((set) => ({
     }
     set({ token });
   },
-  setUserId: (userId) => {
-    if (userId) {
-      localStorage.setItem("userId", userId.toString());
+  setUser: (user) => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
     } else {
-      localStorage.removeItem("userId");
+      localStorage.removeItem("user");
     }
-    set({ userId });
+    set({ user });
   },
   logout: () => {
     localStorage.removeItem("token");
-    set({ token: null, role: null, userId: null });
+    set({ token: null, user: null });
     toast.success("Logout successful");
-    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
     redirect("/login");
   },
 }));

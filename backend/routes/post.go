@@ -17,6 +17,7 @@ func FlowerRoutes(r *gin.Engine) {
 	auth := r.Group("/api/flowers")
 	auth.Use(middlewares.AuthMiddleware())
 	{
+		auth.GET("/user", controllers.GetUser)
 		auth.POST("", controllers.CreateFlower)
 		auth.PUT("/:id", controllers.UpdateFlower)
 		auth.POST("/:id/like", controllers.LikeFlower)

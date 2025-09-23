@@ -7,6 +7,7 @@ type FlowerType = {
   content: string;
   image_url: string;
   author_id: number;
+  author_username: string;
   created_at: string;
   updated_at: string;
   likes: number;

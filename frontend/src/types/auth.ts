@@ -9,4 +9,10 @@ type RegisterPayloadType = {
   password: string;
 };
 
-export type { LoginPayloadType, RegisterPayloadType };
+type UserType = {
+  id: number;
+  username: string;
+  role: "user" | "admin";
+};
+
+export type { LoginPayloadType, RegisterPayloadType, UserType };

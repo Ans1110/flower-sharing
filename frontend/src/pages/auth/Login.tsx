@@ -26,6 +26,7 @@ const schema = z.object({
 
 const Login = () => {
   const setToken = useAuthStore((state) => state.setToken);
+  const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
   const {
     register,
@@ -40,6 +41,7 @@ const Login = () => {
       api.post("/login", data).then((res) => res.data),
     onSuccess: (data) => {
       setToken(data.token);
+      setUser(data.user);
       toast.success("Welcome back! Login successful");
       navigate("/");
     },

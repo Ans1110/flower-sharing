@@ -15,9 +15,11 @@ import { Link } from "react-router";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Calendar, User, Heart } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import { useUser } from "@/hooks/api/user";
 
 const Flowers = () => {
   const { data, isLoading } = useFlowers();
+  const { data: user } = useUser();
   const deleteFlower = useDeleteFlower();
   const token = useAuthStore((state) => state.token);
 
@@ -108,7 +110,11 @@ const Flowers = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
-                      <span>User {flower.author_id}</span>
+                      <span>
+                        {user?.id === flower.author_id
+                          ? "You"
+                          : flower.author_username}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Heart className="w-4 h-4" />
@@ -118,37 +124,38 @@ const Flowers = () => {
                 </CardContent>
 
                 {/* Actions */}
-                {token && (
-                  <CardFooter className="pt-0">
-                    <div className="flex gap-2 w-full">
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50"
-                      >
-                        <Link to={`/flowers/${flower.id}/edit`}>
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="flex-1 border-rose-200 hover:bg-rose-500 text-white"
-                        onClick={() =>
-                          deleteFlower.mutate(flower.id.toString(), {
-                            onSuccess: () =>
-                              toast.success("Flower deleted successfully"),
-                          })
-                        }
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardFooter>
-                )}
+                {token &&
+                  (user?.id === flower.author_id || user?.role === "admin") && (
+                    <CardFooter className="pt-0">
+                      <div className="flex gap-2 w-full">
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50"
+                        >
+                          <Link to={`/flowers/${flower.id}/edit`}>
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="flex-1 border-rose-200 hover:bg-rose-500 text-white"
+                          onClick={() =>
+                            deleteFlower.mutate(flower.id.toString(), {
+                              onSuccess: () =>
+                                toast.success("Flower deleted successfully"),
+                            })
+                          }
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  )}
               </Card>
             ))}
           </div>

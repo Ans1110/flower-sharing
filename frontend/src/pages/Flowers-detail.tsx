@@ -19,6 +19,7 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useUser } from "@/hooks/api/user";
 
 const FlowerDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,7 @@ const FlowerDetail = () => {
   const unlikeFlower = useUnlikeFlower();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
+  const { data: user } = useUser();
 
   if (isLoading) {
     return (
@@ -152,27 +154,28 @@ const FlowerDetail = () => {
             )}
 
             {/* Action Buttons */}
-            {token && (
-              <div className="flex gap-3">
-                <Button
-                  asChild
-                  className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
-                >
-                  <Link to={`/flowers/${id}/edit`}>
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Flower
-                  </Link>
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 border-rose-200 hover:bg-rose-500 text-white"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
-            )}
+            {token &&
+              (user?.id === data.author_id || user?.role === "admin") && (
+                <div className="flex gap-3">
+                  <Button
+                    asChild
+                    className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+                  >
+                    <Link to={`/flowers/${id}/edit`}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Flower
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex-1 border-rose-200 hover:bg-rose-500 text-white"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              )}
           </div>
 
           {/* Content Section */}
@@ -195,7 +198,7 @@ const FlowerDetail = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <User className="w-4 h-4" />
-                    <span>User {data.author_id}</span>
+                    <span>{data.author_username}</span>
                   </div>
                 </div>
               </CardHeader>
