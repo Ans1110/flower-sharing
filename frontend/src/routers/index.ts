@@ -10,6 +10,8 @@ import users from "@/pages/admin/Users";
 import posts from "@/pages/admin/Posts";
 import NotFound from "@/pages/NotFound";
 import Error from "@/pages/Error";
+import FlowerForm from "@/pages/FlowerForm";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -23,16 +25,10 @@ export const router = createBrowserRouter([
       {
         path: "/flowers",
         Component: Flowers,
-        children: [
-          {
-            path: "/flowers/:id",
-            Component: FlowersDetail,
-          },
-        ],
       },
       {
-        path: "/profile",
-        Component: Profile,
+        path: "/flowers/:id",
+        Component: FlowersDetail,
       },
       {
         path: "/login",
@@ -42,16 +38,35 @@ export const router = createBrowserRouter([
         path: "/register",
         Component: Register,
       },
+      // Protected routes
       {
-        path: "/admin",
+        path: "/",
+        Component: ProtectedRoute,
         children: [
           {
-            path: "/admin/posts",
-            Component: posts,
+            path: "/flowers/new",
+            Component: FlowerForm,
           },
           {
-            path: "/admin/users",
-            Component: users,
+            path: "/flowers/:id/edit",
+            Component: FlowerForm,
+          },
+          {
+            path: "/profile",
+            Component: Profile,
+          },
+          {
+            path: "/admin",
+            children: [
+              {
+                path: "/admin/posts",
+                Component: posts,
+              },
+              {
+                path: "/admin/users",
+                Component: users,
+              },
+            ],
           },
         ],
       },
