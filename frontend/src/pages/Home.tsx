@@ -23,7 +23,7 @@ const Home = () => {
               <Sparkles className="w-4 h-4" />
               Share the beauty of flowers
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-6 leading-tight pb-2">
               Flower Sharing
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">

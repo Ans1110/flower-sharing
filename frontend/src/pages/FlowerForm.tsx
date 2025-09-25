@@ -10,7 +10,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  type FlowerPayloadType,
   useCreateFlower,
   useFlower,
   useUpdateFlower,
@@ -21,10 +20,11 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import z from "zod";
 import { Flower, Camera, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import type { FlowerPayloadType } from "@/types/flower";
 
 const schema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  content: z.string().min(10, "Content must be at least 10 characters"),
+  title: z.string().min(1, "Title must be at least 1 character"),
+  content: z.string().min(5, "Content must be at least 5 characters"),
   image_url: z.string().url("Please enter a valid image URL"),
 });
 

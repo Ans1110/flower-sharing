@@ -78,5 +78,13 @@ func Login(c *gin.Context) {
 	})
 	tokenString, _ := token.SignedString(jwtSecret)
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	c.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+		"user": gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+			"role":     user.Role,
+		},
+	})
 }

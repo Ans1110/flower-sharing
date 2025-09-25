@@ -3,6 +3,7 @@ package controllers
 import (
 	"flower-backend/services"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -17,13 +18,30 @@ const (
 func ListFlowers(c *gin.Context) {
 	postService := services.NewPostService()
 
-	flowers, err := postService.GetAllPostsWithAuthor()
+	// Get pagination parameters
+	page := c.DefaultQuery("page", "1")
+	limit := c.DefaultQuery("limit", "6")
+
+	flowers, total, err := postService.GetAllPostsWithAuthorPaginated(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query flowers"})
 		return
 	}
 
-	c.JSON(http.StatusOK, flowers)
+	// Calculate pagination info
+	pageInt, _ := strconv.Atoi(page)
+	limitInt, _ := strconv.Atoi(limit)
+	totalPages := (total + int64(limitInt) - 1) / int64(limitInt)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": flowers,
+		"pagination": gin.H{
+			"page":        pageInt,
+			"limit":       limitInt,
+			"total":       total,
+			"total_pages": totalPages,
+		},
+	})
 }
 
 // Get /api/flowers/:id
@@ -261,4 +279,24 @@ func GetUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+// Get /api/search
+func SearchPosts(c *gin.Context) {
+	query := c.Query("query")
+
+	if query == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter is required"})
+		return
+	}
+
+	postService := services.NewPostService()
+
+	posts, err := postService.SearchPosts(query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search posts"})
+		return
+	}
+
+	c.JSON(http.StatusOK, posts)
 }

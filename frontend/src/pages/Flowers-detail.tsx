@@ -19,7 +19,6 @@ import {
 import { useAuthStore } from "@/store/auth";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useUser } from "@/hooks/api/user";
 
 const FlowerDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +29,7 @@ const FlowerDetail = () => {
   const unlikeFlower = useUnlikeFlower();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
-  const { data: user } = useUser();
+  const user = useAuthStore((state) => state.user);
 
   if (isLoading) {
     return (

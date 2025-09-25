@@ -14,6 +14,8 @@ func FlowerRoutes(r *gin.Engine) {
 		api.GET("/:id", controllers.GetFlower)
 	}
 
+	r.GET("/api/search", controllers.SearchPosts)
+
 	auth := r.Group("/api/flowers")
 	auth.Use(middlewares.AuthMiddleware())
 	{

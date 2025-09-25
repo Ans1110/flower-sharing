@@ -1,29 +1,16 @@
 import api from "@/services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  FlowerType,
+  FlowerPayloadType,
+  PaginatedFlowersResponse,
+} from "@/types/flower";
 
-type FlowerType = {
-  id: number;
-  title: string;
-  content: string;
-  image_url: string;
-  author_id: number;
-  author_username: string;
-  created_at: string;
-  updated_at: string;
-  likes: number;
-};
-
-type FlowerPayloadType = {
-  title: string;
-  content: string;
-  image_url: string;
-};
-
-const useFlowers = () => {
-  return useQuery<FlowerType[]>({
-    queryKey: ["flowers"],
+const useFlowers = (page: number = 1, limit: number = 6) => {
+  return useQuery<PaginatedFlowersResponse>({
+    queryKey: ["flowers", "paginated", page, limit],
     queryFn: async () => {
-      const res = await api.get("/api/flowers");
+      const res = await api.get(`/api/flowers?page=${page}&limit=${limit}`);
       return res.data;
     },
   });
@@ -98,6 +85,19 @@ const useUnlikeFlower = () => {
   });
 };
 
+const useSearchFlowers = (query: string) => {
+  return useQuery<FlowerType[]>({
+    queryKey: ["flowers", "search", query],
+    queryFn: async () => {
+      const res = await api.get(
+        `/api/search?query=${encodeURIComponent(query)}`
+      );
+      return res.data;
+    },
+    enabled: query.length > 0,
+  });
+};
+
 export {
   useFlowers,
   useFlower,
@@ -106,6 +106,5 @@ export {
   useDeleteFlower,
   useLikeFlower,
   useUnlikeFlower,
-  type FlowerType,
-  type FlowerPayloadType,
+  useSearchFlowers,
 };

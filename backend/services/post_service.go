@@ -32,6 +32,39 @@ func (s *PostService) GetAllPostsWithAuthor() ([]PostWithAuthor, error) {
 	return posts, err
 }
 
+// GetAllPostsWithAuthorPaginated retrieves paginated posts with author usernames
+func (s *PostService) GetAllPostsWithAuthorPaginated(pageStr, limitStr string) ([]PostWithAuthor, int64, error) {
+	var posts []PostWithAuthor
+	var total int64
+
+	page, _ := strconv.Atoi(pageStr)
+	limit, _ := strconv.Atoi(limitStr)
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 6
+	}
+
+	offset := (page - 1) * limit
+
+	err := database.DB.Table("posts").Count(&total).Error
+	if err != nil {
+		return posts, 0, err
+	}
+
+	err = database.DB.Table("posts").
+		Select("posts.*, COALESCE(users.username, 'Unknown User') as author_username").
+		Joins("LEFT JOIN users ON posts.author_id = users.id").
+		Order("posts.created_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Scan(&posts).Error
+
+	return posts, total, err
+}
+
 // GetPostWithAuthorByID retrieves a single post with author username by ID
 func (s *PostService) GetPostWithAuthorByID(id string) (PostWithAuthor, error) {
 	var post PostWithAuthor
@@ -153,4 +186,18 @@ func (s *PostService) CheckPostOwnership(postID string, userID uint) (bool, erro
 func (s *PostService) ValidatePostID(id string) error {
 	_, err := strconv.ParseUint(id, 10, 32)
 	return err
+}
+
+// SearchPosts searches for posts by title
+func (s *PostService) SearchPosts(query string) ([]PostWithAuthor, error) {
+	var posts []PostWithAuthor
+
+	err := database.DB.Table("posts").
+		Select("posts.*, COALESCE(users.username, 'Unknown User') as author_username").
+		Joins("LEFT JOIN users ON posts.author_id = users.id").
+		Where("posts.title LIKE ?", "%"+query+"%").
+		Order("posts.created_at DESC").
+		Scan(&posts).Error
+
+	return posts, err
 }

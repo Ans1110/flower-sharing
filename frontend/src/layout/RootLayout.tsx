@@ -15,6 +15,7 @@ import { useState } from "react";
 
 const RootLayout = () => {
   const token = useAuthStore((state) => state.token);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,6 +31,17 @@ const RootLayout = () => {
     { path: "/flowers", label: "Flowers", icon: Flower },
     ...(token ? [{ path: "/profile", label: "Profile", icon: User }] : []),
   ];
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
