@@ -1,9 +1,6 @@
-package userController
+package user_controllers
 
 import (
-	"flower-backend/config"
-	"flower-backend/database"
-	"flower-backend/services/v1"
 	"flower-backend/utils"
 	"net/http"
 	"strconv"
@@ -13,8 +10,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
-
-var userService = services.NewUserService(database.DB, config.LoadConfig())
 
 // GET /api/v1/user/:id
 func GetUserByID(c *gin.Context) {

@@ -39,7 +39,10 @@ func LoadConfig() *Config {
 	cloudinaryAPIKey := utils.MustGetEnv("CLOUDINARY_API_KEY")
 	cloudinaryAPISecret := utils.MustGetEnv("CLOUDINARY_API_SECRET")
 	whiteListAdminEmails := strings.Split(utils.MustGetEnv("WHITE_LIST_ADMIN_EMAILS"), ",")
-	allowOrigins := strings.Split(utils.MustGetEnv("ALLOW_ORIGINS"), ",")
+	// AllowOrigins
+	allowOriginsRaw := utils.MustGetEnv("ALLOW_ORIGINS")
+	allowOriginsRaw = strings.Trim(allowOriginsRaw, "[]\"")
+	allowOrigins := strings.Split(allowOriginsRaw, ",")
 	return &Config{
 		Port:                 port,
 		WhiteListedOrigins:   whiteListedOrigins,

@@ -1,4 +1,4 @@
-package authController
+package auth_controllers
 
 import (
 	"flower-backend/config"
@@ -6,13 +6,16 @@ import (
 	"flower-backend/libs"
 	"flower-backend/middlewares"
 	"flower-backend/models"
-	"flower-backend/services/v1"
+	user_services "flower-backend/services/v1/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var cfg = config.LoadConfig()
+var userService = user_services.NewUserService(database.DB, cfg)
 
 type RegisterInput struct {
 	Username string `json:"username" binding:"required,min=3,max=20"`
@@ -22,8 +25,6 @@ type RegisterInput struct {
 
 func Register(c *gin.Context) {
 	var body RegisterInput
-	cfg := config.LoadConfig()
-	userService := services.NewUserService(database.DB, cfg)
 
 	if err := c.ShouldBindJSON(&body); err != nil {
 		if middlewares.ExtractValidationErrors(c, err) {

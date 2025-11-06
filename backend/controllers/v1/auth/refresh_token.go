@@ -1,4 +1,4 @@
-package authController
+package auth_controllers
 
 import (
 	"flower-backend/database"

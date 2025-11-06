@@ -1,12 +1,10 @@
-package authController
+package auth_controllers
 
 import (
-	"flower-backend/config"
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/middlewares"
 	"flower-backend/models"
-	"flower-backend/services/v1"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,9 +20,6 @@ type LoginInput struct {
 
 func Login(c *gin.Context) {
 	var body LoginInput
-	cfg := config.LoadConfig()
-	userService := services.NewUserService(database.DB, cfg)
-
 	if err := c.ShouldBindJSON(&body); err != nil {
 		if middlewares.ExtractValidationErrors(c, err) {
 			return
