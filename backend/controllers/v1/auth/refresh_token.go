@@ -1,0 +1,70 @@
+package authController
+
+import (
+	"flower-backend/database"
+	"flower-backend/libs"
+	"flower-backend/models"
+	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+)
+
+func RefreshToken(c *gin.Context) {
+	refreshToken, err := c.Cookie("refreshToken")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    "AuthenticationError",
+			"message": "Invalid refresh token",
+		})
+		return
+	}
+
+	// Check if token exists in database
+	var token models.Token
+	if err := database.DB.Where("token = ?", refreshToken).First(&token).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    "AuthenticationError",
+			"message": "Invalid refresh token",
+		})
+		return
+	}
+
+	// Verify refresh token
+	userId, err := libs.VerifyRefreshToken(refreshToken)
+	if err != nil {
+		// Check if it's a token expiration error
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"code":    "AuthenticationError",
+					"message": "Refresh token expired, please login again",
+				})
+				return
+			}
+		}
+
+		// Invalid token error
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    "AuthenticationError",
+			"message": "Invalid refresh token",
+		})
+		return
+	}
+
+	// Generate new access token
+	accessToken := libs.GenerateAccessToken(userId)
+	if accessToken == "" {
+		zap.L().Error("Error during refresh token: failed to generate access token")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    "ServerError",
+			"message": "Internal server error",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"accessToken": accessToken,
+	})
+}
