@@ -17,8 +17,9 @@ func Routes(r *gin.Engine) {
 		// User routes
 		// /api/v1/user
 		UserRoutes(api)
-		// TODO: Add more routes here
-		// User routes
+		// Admin routes
+		// /api/v1/admin
+		AdminRoutes(api)
 		// Post routes
 	}
 }

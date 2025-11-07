@@ -1,6 +1,7 @@
-package user_controllers
+package admin_user_controller
 
 import (
+	user_service_factory "flower-backend/controllers/v1/user"
 	"flower-backend/middlewares"
 	"flower-backend/utils"
 	"net/http"
@@ -11,8 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// PUT /api/v1/user/:id
+// PUT /api/v1/admin/user/:id
 func UpdateUserByID(c *gin.Context) {
+	svc, err := user_service_factory.GetUserService()
+	if err != nil {
+		zap.L().Error(user_service_factory.LogErrInitUserService, zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": user_service_factory.RespErrInternalServer})
+		return
+	}
 	userID := c.Param("id")
 	userIDUint, err := strconv.ParseUint(userID, 10, 64)
 	if err != nil {
@@ -20,7 +27,7 @@ func UpdateUserByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
 		return
 	}
-	user, err := userService.GetUserByID(uint(userIDUint))
+	user, err := svc.GetUserByID(uint(userIDUint))
 	if err != nil {
 		zap.L().Error("failed to get user by id", zap.String("user_id", userID), zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -30,26 +37,32 @@ func UpdateUserByID(c *gin.Context) {
 		if middlewares.ExtractValidationErrors(c, err) {
 			return
 		}
-		zap.L().Error("failed to bind user", zap.Error(err))
+		zap.L().Error(user_service_factory.LogErrBindUser, zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err = userService.UpdateUserByID(uint(userIDUint), *user)
+	user, err = svc.UpdateUserByID(uint(userIDUint), *user)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("user not found", zap.String("user_id", userID))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			zap.L().Error(user_service_factory.LogErrUserNotFound, zap.String("user_id", userID))
+			c.JSON(http.StatusNotFound, gin.H{"error": user_service_factory.RespErrUserNotFound})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": user})
-	zap.L().Info("user updated successfully", zap.String("user_id", userID))
+	zap.L().Info(user_service_factory.LogMsgUserUpdated, zap.String("user_id", userID))
 }
 
-// PUT /api/v1/user/email/:email
+// PUT /api/v1/admin/user/email/:email
 func UpdateUserByEmail(c *gin.Context) {
+	svc, err := user_service_factory.GetUserService()
+	if err != nil {
+		zap.L().Error(user_service_factory.LogErrInitUserService, zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": user_service_factory.RespErrInternalServer})
+		return
+	}
 	email := c.Param("email")
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
@@ -59,7 +72,7 @@ func UpdateUserByEmail(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
 		return
 	}
-	user, err := userService.GetUserByEmail(email)
+	user, err := svc.GetUserByEmail(email)
 	if err != nil {
 		zap.L().Error("failed to get user by email", zap.String("email", email), zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -69,26 +82,32 @@ func UpdateUserByEmail(c *gin.Context) {
 		if middlewares.ExtractValidationErrors(c, err) {
 			return
 		}
-		zap.L().Error("failed to bind user", zap.Error(err))
+		zap.L().Error(user_service_factory.LogErrBindUser, zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err = userService.UpdateUserByEmail(email, *user)
+	user, err = svc.UpdateUserByEmail(email, *user)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("user not found", zap.String("email", email))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			zap.L().Error(user_service_factory.LogErrUserNotFound, zap.String("email", email))
+			c.JSON(http.StatusNotFound, gin.H{"error": user_service_factory.RespErrUserNotFound})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": user})
-	zap.L().Info("user updated successfully", zap.String("email", email))
+	zap.L().Info(user_service_factory.LogMsgUserUpdated, zap.String("email", email))
 }
 
-// PUT /api/v1/user/:username
+// PUT /api/v1/admin/user/:username
 func UpdateUserByUsername(c *gin.Context) {
+	svc, err := user_service_factory.GetUserService()
+	if err != nil {
+		zap.L().Error(user_service_factory.LogErrInitUserService, zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": user_service_factory.RespErrInternalServer})
+		return
+	}
 	username := c.Param("username")
 	if username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username is required"})
@@ -98,7 +117,7 @@ func UpdateUserByUsername(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
 		return
 	}
-	user, err := userService.GetUserByUsername(username)
+	user, err := svc.GetUserByUsername(username)
 	if err != nil {
 		zap.L().Error("failed to get user by username", zap.String("username", username), zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -108,20 +127,20 @@ func UpdateUserByUsername(c *gin.Context) {
 		if middlewares.ExtractValidationErrors(c, err) {
 			return
 		}
-		zap.L().Error("failed to bind user", zap.Error(err))
+		zap.L().Error(user_service_factory.LogErrBindUser, zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err = userService.UpdateUserByUsername(username, *user)
+	user, err = svc.UpdateUserByUsername(username, *user)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("user not found", zap.String("username", username))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			zap.L().Error(user_service_factory.LogErrUserNotFound, zap.String("username", username))
+			c.JSON(http.StatusNotFound, gin.H{"error": user_service_factory.RespErrUserNotFound})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": user})
-	zap.L().Info("user updated successfully", zap.String("username", username))
+	zap.L().Info(user_service_factory.LogMsgUserUpdated, zap.String("username", username))
 }
