@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"flower-backend/config"
 	"flower-backend/database"
 	"flower-backend/log"
+	"flower-backend/middlewares"
 	"flower-backend/models"
 	v1Routes "flower-backend/routes/v1"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -27,37 +32,18 @@ func main() {
 	database.ConnectDB(cfg)
 	db := database.DB
 
-	// Clean up orphaned posts before migration
-	// Disable foreign key checks temporarily to allow cleanup
-	db.Exec("SET FOREIGN_KEY_CHECKS = 0")
-
-	if db.Migrator().HasTable(&models.Post{}) && db.Migrator().HasTable(&models.User{}) {
-		// Delete posts with invalid user_id references
-		result := db.Exec(`
-			DELETE FROM posts 
-			WHERE user_id NOT IN (SELECT id FROM users) 
-			AND user_id IS NOT NULL
-		`)
-		if result.Error == nil && result.RowsAffected > 0 {
-			logger.Info("cleaned up orphaned posts", zap.Int64("count", result.RowsAffected))
-		}
-	}
-
-	// Run migration with foreign key checks disabled
 	if err := db.AutoMigrate(&models.User{}, &models.Post{}, &models.Token{}); err != nil {
-		// Re-enable checks before exiting on error
-		db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 		logger.Error("failed to migrate database", zap.Error(err))
 		os.Exit(1)
 	}
-
-	// Re-enable foreign key checks after successful migration
-	db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 	logger.Info("database migrated")
 	// gin setup
 	r := gin.New()
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
+	if cfg.GO_ENV == "production" {
+		r.Use(middlewares.HttpLogger)
+	}
 	r.Use(func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -78,6 +64,9 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// Rate limiter: 60 requests per minute per IP
+	r.Use(middlewares.RateLimiter())
+
 	// Setup routes
 	v1Routes.Routes(r)
 
@@ -85,14 +74,65 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	logger.Info("server running on port http://localhost:" + port)
 
-	if err := r.Run(":" + port); err != nil {
-		logger.Error("failed to start server", zap.Error(err))
-		if cfg.GO_ENV == "production" {
-			os.Exit(1)
-		}
+	// Create HTTP server
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: r,
 	}
 
+	// Start server in a goroutine
+	go func() {
+		logger.Info("server running on port http://localhost:" + port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("failed to start server", zap.Error(err))
+			if cfg.GO_ENV == "production" {
+				os.Exit(1)
+			}
+		}
+	}()
+
 	logger.Info("server started")
+
+	/**
+	 * Listens for termination signals (`SIGTERM` and `SIGINT`).
+	 *
+	 * - `SIGTERM` is typically sent when stopping a process (e.g., `kill` command or container shutdown).
+	 * - `SIGINT` is triggered when the user interrupts the process (e.g., pressing `Ctrl + C`).
+	 * - When either signal is received, `handleServerShutdown` is executed to ensure proper cleanup.
+	 */
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	logger.Info("shutting down server...")
+
+	// Graceful shutdown with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Error("server forced to shutdown", zap.Error(err))
+	}
+
+	handleServerShutdown(logger)
+}
+
+/**
+ * Handles server shutdown gracefully by disconnecting from the database.
+ *
+ * - Attempts to disconnect from the database before shutting down the server.
+ * - Logs a success message if the disconnection is successful.
+ * - If an error occurs during disconnection, it is logged to the console.
+ * - Exits the process with status code `0` (indicating a successful shutdown).
+ */
+func handleServerShutdown(logger *zap.Logger) {
+	logger.Info("disconnecting from database...")
+	if err := database.DisconnectDB(); err != nil {
+		logger.Error("failed to disconnect from database", zap.Error(err))
+	} else {
+		logger.Info("database disconnected successfully")
+	}
+	logger.Warn("server shutdown")
+	os.Exit(0)
 }

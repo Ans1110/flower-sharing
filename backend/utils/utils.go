@@ -72,3 +72,8 @@ func ValidateUsername(username string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(username)
 }
+
+// formatUnixTime formats Unix timestamp as string
+func FormatUnixTime(timestamp int64) string {
+	return time.Unix(timestamp, 0).Format(time.RFC3339)
+}

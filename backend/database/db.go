@@ -11,6 +11,7 @@ import (
 
 var DB *gorm.DB
 
+// ConnectDB connects to the database
 func ConnectDB(config *config.Config) {
 	dsn := config.DatabaseURL
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -19,4 +20,16 @@ func ConnectDB(config *config.Config) {
 		os.Exit(1)
 	}
 	DB = db
+}
+
+// DisconnectDB closes the database connection gracefully
+func DisconnectDB() error {
+	if DB != nil {
+		sqlDB, err := DB.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Close()
+	}
+	return nil
 }
