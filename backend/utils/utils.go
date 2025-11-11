@@ -5,10 +5,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func init() {
@@ -76,4 +78,23 @@ func ValidateUsername(username string) bool {
 // formatUnixTime formats Unix timestamp as string
 func FormatUnixTime(timestamp int64) string {
 	return time.Unix(timestamp, 0).Format(time.RFC3339)
+}
+
+// formatOrigin
+func FormatOrigins() []string {
+	allowOriginsRaw := MustGetEnv("ALLOW_ORIGINS")
+	allowOriginsRaw = strings.Trim(allowOriginsRaw, "[]\"")
+	allowOrigins := strings.Split(allowOriginsRaw, ",")
+
+	return allowOrigins
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		logger, _ := zap.NewProduction()
+		logger.Fatal("failed to hash password", zap.Error(err))
+		return "", err
+	}
+	return string(hashedPassword), nil
 }

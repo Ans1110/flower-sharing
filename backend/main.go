@@ -54,6 +54,9 @@ func main() {
 		c.Next()
 	})
 
+	// helmet
+	r.Use(middlewares.Helmet())
+
 	// cors
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowOrigins,

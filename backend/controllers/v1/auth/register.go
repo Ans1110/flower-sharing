@@ -4,14 +4,13 @@ import (
 	"flower-backend/config"
 	"flower-backend/database"
 	"flower-backend/libs"
-	"flower-backend/middlewares"
 	"flower-backend/models"
 	user_services "flower-backend/services/v1/user"
+	"flower-backend/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var cfg = config.LoadConfig()
@@ -21,31 +20,43 @@ type RegisterInput struct {
 	Username string `json:"username" binding:"required,min=3,max=20"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
+	Avatar   string `json:"avatar"`
 }
 
 func Register(c *gin.Context) {
-	var body RegisterInput
-
-	if err := c.ShouldBindJSON(&body); err != nil {
-		if middlewares.ExtractValidationErrors(c, err) {
-			return
-		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	username := c.PostForm("username")
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+	avatar, err := c.FormFile("avatar")
+	if err != nil {
+		zap.L().Error("failed to get avatar file", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get avatar file"})
 		return
 	}
 
-	// hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	if username == "" || email == "" || password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username, email and password are required"})
+		return
+	}
+
+	if !utils.ValidateUsername(username) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
+		return
+	}
+
+	if !utils.ValidateEmail(email) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		return
+	}
+
+	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		zap.L().Error("failed to hash password", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
 
-	user, err := userService.CreateUser(models.User{
-		Username: body.Username,
-		Email:    body.Email,
-		Password: string(hashedPassword),
-	})
+	user, err := userService.RegisterUser(username, email, hashedPassword, avatar)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

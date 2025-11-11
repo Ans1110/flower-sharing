@@ -1,4 +1,4 @@
-package admin_user_dto
+package admin_dto
 
 import (
 	"flower-backend/models"

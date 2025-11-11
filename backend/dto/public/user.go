@@ -1,4 +1,4 @@
-package public_user_dto
+package public_dto
 
 import (
 	"strings"

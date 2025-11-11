@@ -22,12 +22,11 @@ func AdminRoutes(r *gin.RouterGroup) {
 			adminUser.GET("/id/:id/select", admin_user_controller.GetUserByIDWithSelect)
 			adminUser.GET("/email/:email/select", admin_user_controller.GetUserByEmailWithSelect)
 			adminUser.GET("/username/:username/select", admin_user_controller.GetUserByUsernameWithSelect)
-			// Create routes
-			adminUser.POST("", admin_user_controller.CreateUser)
 			// Update routes
 			adminUser.PUT("/:id", admin_user_controller.UpdateUserByID)
 			adminUser.PUT("/email/:email", admin_user_controller.UpdateUserByEmail)
 			adminUser.PUT("/username/:username", admin_user_controller.UpdateUserByUsername)
+			adminUser.PUT("/id/:id/select", admin_user_controller.UpdateUserByIDWithSelect)
 			// Delete routes
 			adminUser.DELETE("/:id", admin_user_controller.DeleteUserByID)
 			adminUser.DELETE("/email/:email", admin_user_controller.DeleteUserByEmail)
