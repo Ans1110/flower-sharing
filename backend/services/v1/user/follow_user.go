@@ -10,42 +10,20 @@ import (
 
 // FollowUser
 func (s *UserService) FollowUser(followerID, followingID uint) error {
-	var follower, following models.User
-	if err := s.db.First(&follower, followerID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			s.logger.Error("follower not found", zap.Uint("id", followerID))
-			return gorm.ErrRecordNotFound
-		}
-		s.logger.Error("failed to follow user", zap.Error(err))
-		return err
-	}
-	if err := s.db.First(&following, followingID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			s.logger.Error("following not found", zap.Uint("id", followingID))
-			return gorm.ErrRecordNotFound
-		}
-		s.logger.Error("failed to follow user", zap.Error(err))
-		return err
-	}
-
-	var count int64
-	err := s.db.Table("user_follows").
-		Where("follower_id = ? AND following_id = ?", followerID, followingID).
-		Count(&count).Error
+	exists, err := s.repo.CheckFollowExists(followerID, followingID)
 	if err != nil {
 		s.logger.Error("failed to check if user is followed", zap.Error(err))
 		return err
 	}
-	if count > 0 {
+	if exists {
 		return errors.New("user already followed")
 	}
 
-	if err := s.db.Model(&follower).Association("Following").Append(&models.User{ID: followingID}); err != nil {
-		s.logger.Error("failed to follow user", zap.Error(err))
-		return err
-	}
-
-	if err := s.db.Model(&following).Association("Followers").Append(&models.User{ID: followerID}); err != nil {
+	if err := s.repo.Follow(followerID, followingID); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			s.logger.Error("user not found", zap.Error(err))
+			return gorm.ErrRecordNotFound
+		}
 		s.logger.Error("failed to follow user", zap.Error(err))
 		return err
 	}
@@ -56,30 +34,11 @@ func (s *UserService) FollowUser(followerID, followingID uint) error {
 
 // UnfollowUser
 func (s *UserService) UnfollowUser(followerID, followingID uint) error {
-	var follower, following models.User
-	if err := s.db.First(&follower, followerID).Error; err != nil {
+	if err := s.repo.Unfollow(followerID, followingID); err != nil {
 		if err == gorm.ErrRecordNotFound {
-			s.logger.Error("follower not found", zap.Uint("id", followerID))
+			s.logger.Error("user not found", zap.Error(err))
 			return gorm.ErrRecordNotFound
 		}
-		s.logger.Error("failed to unfollow user", zap.Error(err))
-		return err
-	}
-	if err := s.db.First(&following, followingID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			s.logger.Error("following not found", zap.Uint("id", followingID))
-			return gorm.ErrRecordNotFound
-		}
-		s.logger.Error("failed to unfollow user", zap.Error(err))
-		return err
-	}
-
-	if err := s.db.Model(&follower).Association("Following").Delete(&models.User{ID: followingID}); err != nil {
-		s.logger.Error("failed to unfollow user", zap.Error(err))
-		return err
-	}
-
-	if err := s.db.Model(&following).Association("Followers").Delete(&models.User{ID: followerID}); err != nil {
 		s.logger.Error("failed to unfollow user", zap.Error(err))
 		return err
 	}
@@ -90,8 +49,8 @@ func (s *UserService) UnfollowUser(followerID, followingID uint) error {
 
 // GetUserFollowers
 func (s *UserService) GetUserFollowers(userID uint) ([]models.User, error) {
-	var followers []models.User
-	if err := s.db.Model(&models.User{}).Where("following_id = ?", userID).Find(&followers).Error; err != nil {
+	followers, err := s.repo.GetFollowers(userID)
+	if err != nil {
 		s.logger.Error("failed to get user followers", zap.Error(err))
 		return nil, err
 	}
@@ -101,8 +60,8 @@ func (s *UserService) GetUserFollowers(userID uint) ([]models.User, error) {
 
 // GetUserFollowing
 func (s *UserService) GetUserFollowing(userID uint) ([]models.User, error) {
-	var following []models.User
-	if err := s.db.Model(&models.User{}).Where("follower_id = ?", userID).Find(&following).Error; err != nil {
+	following, err := s.repo.GetFollowing(userID)
+	if err != nil {
 		s.logger.Error("failed to get user following", zap.Error(err))
 		return nil, err
 	}
@@ -112,10 +71,8 @@ func (s *UserService) GetUserFollowing(userID uint) ([]models.User, error) {
 
 // GetUserFollowersCount
 func (s *UserService) GetUserFollowersCount(userID uint) (int64, error) {
-	var count int64
-	if err := s.db.Table("user_follows").
-		Where("following_id = ?", userID).
-		Count(&count).Error; err != nil {
+	count, err := s.repo.GetFollowersCount(userID)
+	if err != nil {
 		s.logger.Error("failed to get user followers count", zap.Error(err))
 		return 0, err
 	}
@@ -125,10 +82,8 @@ func (s *UserService) GetUserFollowersCount(userID uint) (int64, error) {
 
 // GetUserFollowingCount
 func (s *UserService) GetUserFollowingCount(userID uint) (int64, error) {
-	var count int64
-	if err := s.db.Table("user_follows").
-		Where("follower_id = ?", userID).
-		Count(&count).Error; err != nil {
+	count, err := s.repo.GetFollowingCount(userID)
+	if err != nil {
 		s.logger.Error("failed to get user following count", zap.Error(err))
 		return 0, err
 	}
@@ -137,12 +92,12 @@ func (s *UserService) GetUserFollowingCount(userID uint) (int64, error) {
 }
 
 // GetUserFollowingPosts
-func (s *UserService) GetUserFollowingPosts(userID uint) ([]models.Post, error) {
-	var posts []models.Post
-	if err := s.db.Model(&models.Post{}).Where("user_id IN (?)", userID).Find(&posts).Error; err != nil {
+func (s *UserService) GetUserFollowingPosts(userID uint, page, limit int) ([]models.Post, int64, error) {
+	posts, total, err := s.repo.GetFollowingPosts(userID, page, limit)
+	if err != nil {
 		s.logger.Error("failed to get user following posts", zap.Error(err))
-		return nil, err
+		return nil, 0, err
 	}
 	s.logger.Info("user following posts fetched successfully", zap.Uint("user_id", userID))
-	return posts, nil
+	return posts, total, nil
 }

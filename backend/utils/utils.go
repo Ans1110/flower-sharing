@@ -71,8 +71,26 @@ func ValidateEmail(email string) bool {
 }
 
 func ValidateUsername(username string) bool {
-	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	re := regexp.MustCompile(`/^[a-z0-9]{2,}$/i`)
 	return re.MatchString(username)
+}
+
+func ValidatePassword(password string) bool {
+	// Check minimum length
+	if len(password) < 8 {
+		return false
+	}
+
+	// Check for at least one lowercase letter
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+	// Check for at least one uppercase letter
+	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
+	// Check for at least one digit
+	hasDigit := regexp.MustCompile(`[0-9]`).MatchString(password)
+	// Check for at least one special character
+	hasSpecial := regexp.MustCompile(`[#?!@$%^&*-]`).MatchString(password)
+
+	return hasLower && hasUpper && hasDigit && hasSpecial
 }
 
 // formatUnixTime formats Unix timestamp as string

@@ -11,7 +11,7 @@ import (
 
 // CreatePost
 func (s *PostService) CreatePost(post models.Post) (*models.Post, error) {
-	if err := s.db.Create(&post).Error; err != nil {
+	if err := s.repo.Create(&post); err != nil {
 		s.logger.Error("failed to create post", zap.Error(err))
 		return nil, err
 	}

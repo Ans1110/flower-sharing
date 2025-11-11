@@ -1,14 +1,12 @@
 package user_services
 
 import (
-	"flower-backend/models"
-
 	"go.uber.org/zap"
 )
 
 // DeleteUserByID
 func (s *UserService) DeleteUserByID(id uint) error {
-	if err := s.db.Delete(&models.User{}, id).Error; err != nil {
+	if err := s.repo.DeleteByID(id); err != nil {
 		s.logger.Error("failed to delete user", zap.Error(err))
 		return err
 	}
@@ -18,7 +16,7 @@ func (s *UserService) DeleteUserByID(id uint) error {
 
 // DeleteUserByEmail
 func (s *UserService) DeleteUserByEmail(email string) error {
-	if err := s.db.Delete(&models.User{}, "email = ?", email).Error; err != nil {
+	if err := s.repo.DeleteByEmail(email); err != nil {
 		s.logger.Error("failed to delete user", zap.Error(err))
 		return err
 	}
@@ -28,7 +26,7 @@ func (s *UserService) DeleteUserByEmail(email string) error {
 
 // DeleteUserByUsername
 func (s *UserService) DeleteUserByUsername(username string) error {
-	if err := s.db.Delete(&models.User{}, "username = ?", username).Error; err != nil {
+	if err := s.repo.DeleteByUsername(username); err != nil {
 		s.logger.Error("failed to delete user", zap.Error(err))
 		return err
 	}

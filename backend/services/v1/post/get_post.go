@@ -10,7 +10,8 @@ import (
 
 // GetPostByID
 func (s *PostService) GetPostByID(id uint) (*models.Post, error) {
-	if err := s.db.Where("id = ?", id).First(&s.post).Error; err != nil {
+	post, err := s.repo.GetByID(id)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("post not found", zap.Uint("id", id))
 			return nil, gorm.ErrRecordNotFound
@@ -19,13 +20,13 @@ func (s *PostService) GetPostByID(id uint) (*models.Post, error) {
 		return nil, err
 	}
 	s.logger.Info("post fetched successfully", zap.Uint("id", id))
-	return &s.post, nil
+	return post, nil
 }
 
 // GetPostByUserID
 func (s *PostService) GetPostAllByUserID(userID uint) ([]models.Post, error) {
-	var posts []models.Post
-	if err := s.db.Where("user_id = ?", userID).Find(&posts).Error; err != nil {
+	posts, err := s.repo.GetAllByUserID(userID)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("posts not found", zap.Uint("user_id", userID))
 			return nil, gorm.ErrRecordNotFound
@@ -39,8 +40,8 @@ func (s *PostService) GetPostAllByUserID(userID uint) ([]models.Post, error) {
 
 // GetPostAll
 func (s *PostService) GetPostAll() ([]models.Post, error) {
-	var posts []models.Post
-	if err := s.db.Find(&posts).Error; err != nil {
+	posts, err := s.repo.GetAll()
+	if err != nil {
 		s.logger.Error("failed to get all posts", zap.Error(err))
 		return nil, err
 	}
@@ -50,8 +51,8 @@ func (s *PostService) GetPostAll() ([]models.Post, error) {
 
 // SearchPosts
 func (s *PostService) SearchPosts(query string) ([]models.Post, error) {
-	var posts []models.Post
-	if err := s.db.Where("title LIKE ? OR content LIKE ?", "%"+query+"%", "%"+query+"%").Find(&posts).Order("created_at DESC").Error; err != nil {
+	posts, err := s.repo.Search(query)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("posts not found", zap.String("query", query))
 			return nil, gorm.ErrRecordNotFound
@@ -65,8 +66,8 @@ func (s *PostService) SearchPosts(query string) ([]models.Post, error) {
 
 // CheckPostOwnership
 func (s *PostService) CheckPostOwnership(postID, userID uint) (bool, error) {
-	var post models.Post
-	if err := s.db.First(&post, postID).Error; err != nil {
+	post, err := s.repo.GetByID(postID)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("post not found", zap.Uint("id", postID))
 			return false, gorm.ErrRecordNotFound
@@ -90,29 +91,7 @@ func (s *PostService) CheckPostOwnership(postID, userID uint) (bool, error) {
 
 // GetPostWithPagination
 func (s *PostService) GetPostWithPagination(page, limit int) ([]models.Post, int64, error) {
-	var posts []models.Post
-	var total int64
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 {
-		limit = 6
-	}
-
-	offset := (page - 1) * limit
-
-	if err := s.db.Table("posts").Count(&total).Error; err != nil {
-		s.logger.Error("failed to get total posts", zap.Error(err))
-		return nil, 0, err
-	}
-
-	err := s.db.Table("posts").
-		Order("created_at DESC").
-		Offset(offset).
-		Limit(limit).
-		Scan(&posts).Error
-
+	posts, total, err := s.repo.GetWithPagination(page, limit)
 	if err != nil {
 		s.logger.Error("failed to get posts with pagination", zap.Error(err))
 		return nil, 0, err

@@ -9,7 +9,8 @@ import (
 
 // GetUserByID
 func (s *UserService) GetUserByID(id uint) (*models.User, error) {
-	if err := s.db.Where("id = ?", id).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByID(id)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.Uint("id", id))
 			return nil, gorm.ErrRecordNotFound
@@ -18,12 +19,13 @@ func (s *UserService) GetUserByID(id uint) (*models.User, error) {
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.Uint("id", id))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserByEmail
 func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
-	if err := s.db.Where("email = ?", email).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByEmail(email)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.String("email", email))
 			return nil, gorm.ErrRecordNotFound
@@ -32,12 +34,13 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.String("email", email))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserByUsername
 func (s *UserService) GetUserByUsername(username string) (*models.User, error) {
-	if err := s.db.Where("username = ?", username).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByUsername(username)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.String("username", username))
 			return nil, gorm.ErrRecordNotFound
@@ -46,12 +49,13 @@ func (s *UserService) GetUserByUsername(username string) (*models.User, error) {
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.String("username", username))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserByIDWithSelect
 func (s *UserService) GetUserByIDWithSelect(id uint, selectFields []string) (*models.User, error) {
-	if err := s.db.Select(selectFields).Where("id = ?", id).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByIDWithSelect(id, selectFields)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.Uint("id", id))
 			return nil, gorm.ErrRecordNotFound
@@ -60,12 +64,13 @@ func (s *UserService) GetUserByIDWithSelect(id uint, selectFields []string) (*mo
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.Uint("id", id))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserByEmailWithSelect
 func (s *UserService) GetUserByEmailWithSelect(email string, selectFields []string) (*models.User, error) {
-	if err := s.db.Select(selectFields).Where("email = ?", email).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByEmailWithSelect(email, selectFields)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.String("email", email))
 			return nil, gorm.ErrRecordNotFound
@@ -74,12 +79,13 @@ func (s *UserService) GetUserByEmailWithSelect(email string, selectFields []stri
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.String("email", email))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserByUsernameWithSelect
 func (s *UserService) GetUserByUsernameWithSelect(username string, selectFields []string) (*models.User, error) {
-	if err := s.db.Select(selectFields).Where("username = ?", username).First(&s.user).Error; err != nil {
+	user, err := s.repo.GetByUsernameWithSelect(username, selectFields)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.String("username", username))
 			return nil, gorm.ErrRecordNotFound
@@ -88,13 +94,13 @@ func (s *UserService) GetUserByUsernameWithSelect(username string, selectFields 
 		return nil, err
 	}
 	s.logger.Info("user fetched successfully", zap.String("username", username))
-	return &s.user, nil
+	return user, nil
 }
 
 // GetUserAll
 func (s *UserService) GetUserAll() ([]models.User, error) {
-	var users []models.User
-	if err := s.db.Find(&users).Error; err != nil {
+	users, err := s.repo.GetAll()
+	if err != nil {
 		s.logger.Error("failed to get all users", zap.Error(err))
 		return nil, err
 	}

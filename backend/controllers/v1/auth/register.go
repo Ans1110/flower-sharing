@@ -49,6 +49,11 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	if !utils.ValidatePassword(password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid password"})
+		return
+	}
+
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		zap.L().Error("failed to hash password", zap.Error(err))

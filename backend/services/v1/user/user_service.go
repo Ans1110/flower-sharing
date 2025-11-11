@@ -3,19 +3,20 @@ package user_services
 import (
 	"flower-backend/config"
 	"flower-backend/log"
-	"flower-backend/models"
+	user_repository "flower-backend/repositories/v1/user"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type UserService struct {
-	db     *gorm.DB
+	repo   user_repository.UserRepository
 	cfg    *config.Config
-	user   models.User
 	logger *zap.SugaredLogger
 }
 
 func NewUserService(db *gorm.DB, cfg *config.Config) *UserService {
-	return &UserService{db: db, cfg: cfg, user: models.User{}, logger: log.InitLog().Sugar()}
+	logger := log.InitLog().Sugar()
+	repo := user_repository.NewUserRepository(db, logger)
+	return &UserService{repo: repo, cfg: cfg, logger: logger}
 }

@@ -4,12 +4,11 @@ import (
 	"flower-backend/models"
 
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 // UpdateUser
 func (s *UserService) UpdateUser(user models.User) (*models.User, error) {
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.repo.Update(&user); err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
 	}
@@ -19,7 +18,7 @@ func (s *UserService) UpdateUser(user models.User) (*models.User, error) {
 
 // UpdateUserByID
 func (s *UserService) UpdateUserByID(id uint, user models.User) (*models.User, error) {
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.repo.UpdateByID(id, &user); err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
 	}
@@ -29,7 +28,7 @@ func (s *UserService) UpdateUserByID(id uint, user models.User) (*models.User, e
 
 // UpdateUserByEmail
 func (s *UserService) UpdateUserByEmail(email string, user models.User) (*models.User, error) {
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.repo.Update(&user); err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
 	}
@@ -39,7 +38,7 @@ func (s *UserService) UpdateUserByEmail(email string, user models.User) (*models
 
 // UpdateUserByUsername
 func (s *UserService) UpdateUserByUsername(username string, user models.User) (*models.User, error) {
-	if err := s.db.Save(&user).Error; err != nil {
+	if err := s.repo.Update(&user); err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
 	}
@@ -49,11 +48,7 @@ func (s *UserService) UpdateUserByUsername(username string, user models.User) (*
 
 // UpdateUserByIDWithSelect
 func (s *UserService) UpdateUserByIDWithSelect(id uint, user models.User, selectFields []string) (*models.User, error) {
-	if err := s.db.Select(selectFields).Where("id = ?", id).Save(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			s.logger.Error("user not found", zap.Uint("id", id))
-			return nil, gorm.ErrRecordNotFound
-		}
+	if err := s.repo.UpdateByIDWithSelect(id, &user, selectFields); err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
 	}

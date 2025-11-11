@@ -12,7 +12,7 @@ import (
 
 // CreateUser
 func (s *UserService) CreateUser(user models.User) (*models.User, error) {
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := s.repo.Create(&user); err != nil {
 		s.logger.Error("failed to create user", zap.Error(err))
 		return nil, err
 	}
@@ -21,13 +21,13 @@ func (s *UserService) CreateUser(user models.User) (*models.User, error) {
 }
 
 // upload avatar
-func (s *UserService) UploadAvatar(buffer []byte) (string, error) {
+func (s *UserService) UploadAvatar(buffer []byte, userID uint) (string, error) {
 	cld, err := libs.NewCloudinary(s.cfg)
-	publicId := fmt.Sprintf("avatar_%d_%d", s.user.ID, time.Now().Unix())
 	if err != nil {
 		s.logger.Error("failed to create cloudinary client", zap.Error(err))
 		return "", err
 	}
+	publicId := fmt.Sprintf("avatar_%d_%d", userID, time.Now().Unix())
 
 	uploadResult, err := libs.UploadToCloudinary(cld, buffer, publicId)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *UserService) RegisterUser(username, email, password string, avatarFile 
 			s.logger.Error("failed to create cloudinary client", zap.Error(err))
 			return nil, err
 		}
-		publicId := fmt.Sprintf("avatar_%d_%d", s.user.ID, time.Now().Unix())
+		publicId := fmt.Sprintf("avatar_%d", time.Now().Unix())
 		uploadResult, err := libs.UploadToCloudinary(cld, buffer, publicId)
 		if err != nil {
 			s.logger.Error("failed to upload avatar to cloudinary", zap.Error(err))
@@ -76,7 +76,7 @@ func (s *UserService) RegisterUser(username, email, password string, avatarFile 
 		Avatar:   avatarURL,
 	}
 
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := s.repo.Create(&user); err != nil {
 		s.logger.Error("failed to create user", zap.Error(err))
 		return nil, err
 	}

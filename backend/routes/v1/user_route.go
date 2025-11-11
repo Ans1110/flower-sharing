@@ -10,8 +10,6 @@ func UserRoutes(r *gin.RouterGroup) {
 	user := r.Group("/user")
 
 	{
-		// Create routes
-		user.POST("", public_user_controller.CreateUser)
 		// Get routes
 		user.GET("/:id", public_user_controller.GetUserByID)
 		user.GET("/email/:email", public_user_controller.GetUserByEmail)

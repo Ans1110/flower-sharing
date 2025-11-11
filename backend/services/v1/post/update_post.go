@@ -8,7 +8,7 @@ import (
 
 // UpdatePostByID
 func (s *PostService) UpdatePostByID(id uint, post models.Post) (*models.Post, error) {
-	if err := s.db.Save(&post).Error; err != nil {
+	if err := s.repo.Update(&post); err != nil {
 		s.logger.Error("failed to update post", zap.Error(err))
 		return nil, err
 	}
@@ -18,7 +18,7 @@ func (s *PostService) UpdatePostByID(id uint, post models.Post) (*models.Post, e
 
 // UpdatePostByIDWithSelect
 func (s *PostService) UpdatePostByIDWithSelect(id uint, post models.Post, selectFields []string) (*models.Post, error) {
-	if err := s.db.Select(selectFields).Where("id = ?", id).Save(&post).Error; err != nil {
+	if err := s.repo.UpdateByIDWithSelect(id, &post, selectFields); err != nil {
 		s.logger.Error("failed to update post", zap.Error(err))
 		return nil, err
 	}
