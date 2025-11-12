@@ -1,20 +1,15 @@
-package auth_controllers
+package auth_controller
 
 import (
-	"flower-backend/config"
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
-	user_services "flower-backend/services/v1/user"
 	"flower-backend/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
-
-var cfg = config.LoadConfig()
-var userService = user_services.NewUserService(database.DB, cfg)
 
 type RegisterInput struct {
 	Username string `json:"username" binding:"required,min=3,max=20"`
@@ -23,7 +18,7 @@ type RegisterInput struct {
 	Avatar   string `json:"avatar"`
 }
 
-func Register(c *gin.Context) {
+func (ac *authController) Register(c *gin.Context) {
 	username := c.PostForm("username")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
@@ -61,7 +56,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user, err := userService.RegisterUser(username, email, hashedPassword, avatar)
+	user, err := ac.svc.RegisterUser(username, email, hashedPassword, avatar)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -85,7 +80,7 @@ func Register(c *gin.Context) {
 
 	// set cookies
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", cfg.GO_ENV == "production", true)
+	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User created successfully", "user": gin.H{

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RequirePostOwner(postService *post_services.PostService) gin.HandlerFunc {
+func RequirePostOwner(postService post_services.PostService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userId, exists := c.Get("user_id")
 		if !exists {

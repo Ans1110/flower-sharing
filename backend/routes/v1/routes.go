@@ -21,5 +21,7 @@ func Routes(r *gin.Engine) {
 		// /api/v1/admin
 		AdminRoutes(api)
 		// Post routes
+		// /api/v1/post
+		PostRoutes(api)
 	}
 }

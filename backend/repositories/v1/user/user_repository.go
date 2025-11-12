@@ -1,6 +1,7 @@
 package user_repository
 
 import (
+	"flower-backend/config"
 	"flower-backend/models"
 
 	"go.uber.org/zap"
@@ -13,15 +14,10 @@ type UserRepository interface {
 	GetByEmail(email string) (*models.User, error)
 	GetByUsername(username string) (*models.User, error)
 	GetByIDWithSelect(id uint, selectFields []string) (*models.User, error)
-	GetByEmailWithSelect(email string, selectFields []string) (*models.User, error)
-	GetByUsernameWithSelect(username string, selectFields []string) (*models.User, error)
 	GetAll() ([]models.User, error)
 	Update(user *models.User) error
-	UpdateByID(id uint, user *models.User) error
-	UpdateByIDWithSelect(id uint, user *models.User, selectFields []string) error
+	UpdateByIDWithSelect(id uint, updates map[string]any, selectFields []string) (*models.User, error)
 	DeleteByID(id uint) error
-	DeleteByEmail(email string) error
-	DeleteByUsername(username string) error
 	Follow(followerID, followingID uint) error
 	Unfollow(followerID, followingID uint) error
 	CheckFollowExists(followerID, followingID uint) (bool, error)
@@ -34,12 +30,14 @@ type UserRepository interface {
 
 type userRepository struct {
 	db     *gorm.DB
+	cfg    *config.Config
 	logger *zap.SugaredLogger
 }
 
-func NewUserRepository(db *gorm.DB, logger *zap.SugaredLogger) UserRepository {
+func NewUserRepository(db *gorm.DB, cfg *config.Config, logger *zap.SugaredLogger) UserRepository {
 	return &userRepository{
 		db:     db,
+		cfg:    cfg,
 		logger: logger,
 	}
 }

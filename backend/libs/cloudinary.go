@@ -5,6 +5,8 @@ import (
 	"context"
 	"flower-backend/config"
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -65,4 +67,23 @@ func UploadToCloudinary(cld *cloudinary.Cloudinary, buffer []byte, publicId stri
 	}
 
 	return uploadResult, nil
+}
+
+func DeleteFromCloudinary(cld *cloudinary.Cloudinary, publicId string) error {
+	ctx := context.Background()
+	_, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
+		PublicID: publicId,
+	})
+	if err != nil {
+		logger.Error("Error deleting image from Cloudinary", zap.Error(err))
+		return fmt.Errorf("error deleting image from Cloudinary: %w", err)
+	}
+	return err
+}
+
+func ExtractPublicId(imageURL string) string {
+	parts := strings.Split(imageURL, "/")
+	last := parts[len(parts)-1]
+	publicId := strings.TrimSuffix(last, filepath.Ext(last))
+	return "flower-sharing/" + publicId
 }

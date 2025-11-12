@@ -9,7 +9,7 @@ import (
 )
 
 // LikePost
-func (s *PostService) LikePost(postID, userID uint) error {
+func (s *postService) LikePost(postID, userID uint) error {
 	exists, err := s.repo.CheckLikeExists(postID, userID)
 	if err != nil {
 		s.logger.Error("failed to check if post is liked", zap.Error(err))
@@ -34,7 +34,7 @@ func (s *PostService) LikePost(postID, userID uint) error {
 }
 
 // UnlikePost
-func (s *PostService) UnlikePost(postID, userID uint) error {
+func (s *postService) DislikePost(postID, userID uint) error {
 	if err := s.repo.Unlike(postID, userID); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("post not found", zap.Uint("id", postID))
@@ -49,7 +49,7 @@ func (s *PostService) UnlikePost(postID, userID uint) error {
 }
 
 // GetPostLikes
-func (s *PostService) GetPostLikes(postID uint) (int64, error) {
+func (s *postService) GetPostLikes(postID uint) (int64, error) {
 	count, err := s.repo.GetLikesCount(postID)
 	if err != nil {
 		s.logger.Error("failed to get post likes", zap.Error(err))
@@ -60,7 +60,7 @@ func (s *PostService) GetPostLikes(postID uint) (int64, error) {
 }
 
 // GetUserLikedPosts
-func (s *PostService) GetUserLikedPosts(userID uint, page, limit int) ([]models.Post, int64, error) {
+func (s *postService) GetUserLikedPosts(userID uint, page, limit int) ([]models.Post, int64, error) {
 	posts, total, err := s.repo.GetUserLikedPosts(userID, page, limit)
 	if err != nil {
 		s.logger.Error("failed to get user liked posts", zap.Error(err))

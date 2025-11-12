@@ -10,7 +10,7 @@ import (
 )
 
 // CreatePost
-func (s *PostService) CreatePost(post models.Post) (*models.Post, error) {
+func (s *postService) CreatePost(post models.Post) (*models.Post, error) {
 	if err := s.repo.Create(&post); err != nil {
 		s.logger.Error("failed to create post", zap.Error(err))
 		return nil, err
@@ -20,7 +20,7 @@ func (s *PostService) CreatePost(post models.Post) (*models.Post, error) {
 }
 
 // upload image
-func (s *PostService) UploadImage(buffer []byte, postID uint) (string, error) {
+func (s *postService) UploadImage(buffer []byte, postID uint) (string, error) {
 	cld, err := libs.NewCloudinary(s.cfg)
 	if err != nil {
 		s.logger.Error("failed to create cloudinary client", zap.Error(err))

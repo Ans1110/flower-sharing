@@ -116,3 +116,13 @@ func HashPassword(password string) (string, error) {
 	}
 	return string(hashedPassword), nil
 }
+
+// ParseUint parses a string to a uint
+func ParseUint(s string, logger *zap.SugaredLogger) (uint, error) {
+	num, err := strconv.ParseUint(s, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse uint", zap.String("value", s), zap.Error(err))
+		return 0, err
+	}
+	return uint(num), nil
+}

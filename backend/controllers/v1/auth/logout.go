@@ -1,7 +1,6 @@
-package auth_controllers
+package auth_controller
 
 import (
-	"flower-backend/config"
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
@@ -11,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Logout(c *gin.Context) {
+func (ac *authController) Logout(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {
 		zap.L().Error("failed to get refresh token", zap.Error(err))
@@ -32,8 +31,7 @@ func Logout(c *gin.Context) {
 		return
 	}
 
-	cfg := config.LoadConfig()
-	c.SetCookie("refreshToken", "", -1, "/", "", cfg.GO_ENV == "production", true)
+	c.SetCookie("refreshToken", "", -1, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully", "userId": userId})
 

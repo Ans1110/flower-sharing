@@ -11,7 +11,7 @@ import (
 )
 
 // CreateUser
-func (s *UserService) CreateUser(user models.User) (*models.User, error) {
+func (s *userService) CreateUser(user models.User) (*models.User, error) {
 	if err := s.repo.Create(&user); err != nil {
 		s.logger.Error("failed to create user", zap.Error(err))
 		return nil, err
@@ -21,7 +21,7 @@ func (s *UserService) CreateUser(user models.User) (*models.User, error) {
 }
 
 // upload avatar
-func (s *UserService) UploadAvatar(buffer []byte, userID uint) (string, error) {
+func (s *userService) UploadAvatar(buffer []byte, userID uint) (string, error) {
 	cld, err := libs.NewCloudinary(s.cfg)
 	if err != nil {
 		s.logger.Error("failed to create cloudinary client", zap.Error(err))
@@ -38,7 +38,7 @@ func (s *UserService) UploadAvatar(buffer []byte, userID uint) (string, error) {
 }
 
 // register user
-func (s *UserService) RegisterUser(username, email, password string, avatarFile *multipart.FileHeader) (*models.User, error) {
+func (s *userService) RegisterUser(username, email, password string, avatarFile *multipart.FileHeader) (*models.User, error) {
 	var avatarURL string
 
 	if avatarFile != nil {

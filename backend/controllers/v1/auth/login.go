@@ -1,4 +1,4 @@
-package auth_controllers
+package auth_controller
 
 import (
 	"flower-backend/database"
@@ -18,7 +18,7 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func Login(c *gin.Context) {
+func (ac *authController) Login(c *gin.Context) {
 	var body LoginInput
 	if err := c.ShouldBindJSON(&body); err != nil {
 		if middlewares.ExtractValidationErrors(c, err) {
@@ -28,7 +28,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	user, err := userService.GetUserByEmail(body.Email)
+	user, err := ac.svc.GetUserByEmail(body.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			zap.L().Error("user not found", zap.String("email", body.Email))
@@ -65,7 +65,7 @@ func Login(c *gin.Context) {
 
 	// set cookies
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", cfg.GO_ENV == "production", true)
+	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",

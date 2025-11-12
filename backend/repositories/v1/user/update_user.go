@@ -4,6 +4,7 @@ import (
 	"flower-backend/models"
 
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func (r *userRepository) Update(user *models.User) error {
@@ -14,19 +15,36 @@ func (r *userRepository) Update(user *models.User) error {
 	return nil
 }
 
-func (r *userRepository) UpdateByID(id uint, user *models.User) error {
-	if err := r.db.Save(user).Error; err != nil {
-		r.logger.Error("failed to update user by id", zap.Error(err))
-		return err
-	}
-	return nil
-}
+func (r *userRepository) UpdateByIDWithSelect(id uint, updates map[string]any, selectFields []string) (*models.User, error) {
+	var user models.User
 
-func (r *userRepository) UpdateByIDWithSelect(id uint, user *models.User, selectFields []string) error {
-	if err := r.db.Select(selectFields).Where("id = ?", id).Save(user).Error; err != nil {
-		r.logger.Error("failed to update user by id with select", zap.Error(err))
-		return err
+	if err := r.db.First(&user, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, gorm.ErrRecordNotFound
+		}
+		r.logger.Error("failed to find user", zap.Error(err))
+		return nil, err
 	}
-	return nil
-}
 
+	filtered := make(map[string]any)
+	for _, field := range selectFields {
+		if val, ok := updates[field]; ok {
+			filtered[field] = val
+		}
+	}
+
+	if len(filtered) == 0 {
+		return &user, nil
+	}
+
+	if err := r.db.First(&user, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, gorm.ErrRecordNotFound
+		}
+		r.logger.Error("failed to find user", zap.Error(err))
+		return nil, err
+	}
+
+	r.logger.Info("user updated successfully", zap.Uint("id", id))
+	return &user, nil
+}

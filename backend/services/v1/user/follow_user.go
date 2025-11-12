@@ -9,7 +9,7 @@ import (
 )
 
 // FollowUser
-func (s *UserService) FollowUser(followerID, followingID uint) error {
+func (s *userService) FollowUser(followerID, followingID uint) error {
 	exists, err := s.repo.CheckFollowExists(followerID, followingID)
 	if err != nil {
 		s.logger.Error("failed to check if user is followed", zap.Error(err))
@@ -33,7 +33,7 @@ func (s *UserService) FollowUser(followerID, followingID uint) error {
 }
 
 // UnfollowUser
-func (s *UserService) UnfollowUser(followerID, followingID uint) error {
+func (s *userService) UnfollowUser(followerID, followingID uint) error {
 	if err := s.repo.Unfollow(followerID, followingID); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			s.logger.Error("user not found", zap.Error(err))
@@ -48,7 +48,7 @@ func (s *UserService) UnfollowUser(followerID, followingID uint) error {
 }
 
 // GetUserFollowers
-func (s *UserService) GetUserFollowers(userID uint) ([]models.User, error) {
+func (s *userService) GetUserFollowers(userID uint) ([]models.User, error) {
 	followers, err := s.repo.GetFollowers(userID)
 	if err != nil {
 		s.logger.Error("failed to get user followers", zap.Error(err))
@@ -59,7 +59,7 @@ func (s *UserService) GetUserFollowers(userID uint) ([]models.User, error) {
 }
 
 // GetUserFollowing
-func (s *UserService) GetUserFollowing(userID uint) ([]models.User, error) {
+func (s *userService) GetUserFollowing(userID uint) ([]models.User, error) {
 	following, err := s.repo.GetFollowing(userID)
 	if err != nil {
 		s.logger.Error("failed to get user following", zap.Error(err))
@@ -70,7 +70,7 @@ func (s *UserService) GetUserFollowing(userID uint) ([]models.User, error) {
 }
 
 // GetUserFollowersCount
-func (s *UserService) GetUserFollowersCount(userID uint) (int64, error) {
+func (s *userService) GetUserFollowersCount(userID uint) (int64, error) {
 	count, err := s.repo.GetFollowersCount(userID)
 	if err != nil {
 		s.logger.Error("failed to get user followers count", zap.Error(err))
@@ -81,7 +81,7 @@ func (s *UserService) GetUserFollowersCount(userID uint) (int64, error) {
 }
 
 // GetUserFollowingCount
-func (s *UserService) GetUserFollowingCount(userID uint) (int64, error) {
+func (s *userService) GetUserFollowingCount(userID uint) (int64, error) {
 	count, err := s.repo.GetFollowingCount(userID)
 	if err != nil {
 		s.logger.Error("failed to get user following count", zap.Error(err))
@@ -92,7 +92,7 @@ func (s *UserService) GetUserFollowingCount(userID uint) (int64, error) {
 }
 
 // GetUserFollowingPosts
-func (s *UserService) GetUserFollowingPosts(userID uint, page, limit int) ([]models.Post, int64, error) {
+func (s *userService) GetUserFollowingPosts(userID uint, page, limit int) ([]models.Post, int64, error) {
 	posts, total, err := s.repo.GetFollowingPosts(userID, page, limit)
 	if err != nil {
 		s.logger.Error("failed to get user following posts", zap.Error(err))

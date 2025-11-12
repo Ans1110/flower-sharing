@@ -9,7 +9,7 @@ import (
 )
 
 // GetPostByID
-func (s *PostService) GetPostByID(id uint) (*models.Post, error) {
+func (s *postService) GetPostByID(id uint) (*models.Post, error) {
 	post, err := s.repo.GetByID(id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -24,7 +24,7 @@ func (s *PostService) GetPostByID(id uint) (*models.Post, error) {
 }
 
 // GetPostByUserID
-func (s *PostService) GetPostAllByUserID(userID uint) ([]models.Post, error) {
+func (s *postService) GetPostAllByUserID(userID uint) ([]models.Post, error) {
 	posts, err := s.repo.GetAllByUserID(userID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -39,7 +39,7 @@ func (s *PostService) GetPostAllByUserID(userID uint) ([]models.Post, error) {
 }
 
 // GetPostAll
-func (s *PostService) GetPostAll() ([]models.Post, error) {
+func (s *postService) GetPostAll() ([]models.Post, error) {
 	posts, err := s.repo.GetAll()
 	if err != nil {
 		s.logger.Error("failed to get all posts", zap.Error(err))
@@ -50,7 +50,7 @@ func (s *PostService) GetPostAll() ([]models.Post, error) {
 }
 
 // SearchPosts
-func (s *PostService) SearchPosts(query string) ([]models.Post, error) {
+func (s *postService) SearchPosts(query string) ([]models.Post, error) {
 	posts, err := s.repo.Search(query)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -65,7 +65,7 @@ func (s *PostService) SearchPosts(query string) ([]models.Post, error) {
 }
 
 // CheckPostOwnership
-func (s *PostService) CheckPostOwnership(postID, userID uint) (bool, error) {
+func (s *postService) CheckPostOwnership(postID, userID uint) (bool, error) {
 	post, err := s.repo.GetByID(postID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -90,7 +90,7 @@ func (s *PostService) CheckPostOwnership(postID, userID uint) (bool, error) {
 }
 
 // GetPostWithPagination
-func (s *PostService) GetPostWithPagination(page, limit int) ([]models.Post, int64, error) {
+func (s *postService) GetPostWithPagination(page, limit int) ([]models.Post, int64, error) {
 	posts, total, err := s.repo.GetWithPagination(page, limit)
 	if err != nil {
 		s.logger.Error("failed to get posts with pagination", zap.Error(err))

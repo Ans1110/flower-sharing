@@ -1,57 +1,64 @@
 package user_services
 
 import (
+	"flower-backend/libs"
 	"flower-backend/models"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"time"
 
 	"go.uber.org/zap"
 )
 
-// UpdateUser
-func (s *UserService) UpdateUser(user models.User) (*models.User, error) {
-	if err := s.repo.Update(&user); err != nil {
-		s.logger.Error("failed to update user", zap.Error(err))
-		return nil, err
-	}
-	s.logger.Info("user updated successfully", zap.String("username", user.Username))
-	return &user, nil
-}
-
-// UpdateUserByID
-func (s *UserService) UpdateUserByID(id uint, user models.User) (*models.User, error) {
-	if err := s.repo.UpdateByID(id, &user); err != nil {
-		s.logger.Error("failed to update user", zap.Error(err))
-		return nil, err
-	}
-	s.logger.Info("user updated successfully", zap.String("username", user.Username))
-	return &user, nil
-}
-
-// UpdateUserByEmail
-func (s *UserService) UpdateUserByEmail(email string, user models.User) (*models.User, error) {
-	if err := s.repo.Update(&user); err != nil {
-		s.logger.Error("failed to update user", zap.Error(err))
-		return nil, err
-	}
-	s.logger.Info("user updated successfully", zap.String("username", user.Username))
-	return &user, nil
-}
-
-// UpdateUserByUsername
-func (s *UserService) UpdateUserByUsername(username string, user models.User) (*models.User, error) {
-	if err := s.repo.Update(&user); err != nil {
-		s.logger.Error("failed to update user", zap.Error(err))
-		return nil, err
-	}
-	s.logger.Info("user updated successfully", zap.String("username", user.Username))
-	return &user, nil
-}
-
 // UpdateUserByIDWithSelect
-func (s *UserService) UpdateUserByIDWithSelect(id uint, user models.User, selectFields []string) (*models.User, error) {
-	if err := s.repo.UpdateByIDWithSelect(id, &user, selectFields); err != nil {
+func (s *userService) UpdateUserByIDWithSelect(id uint, updates map[string]any, imageFile *multipart.FileHeader, selectFields []string) (*models.User, error) {
+	user, err := s.repo.UpdateByIDWithSelect(id, updates, selectFields)
+	if err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))
 		return nil, err
+	}
+
+	if imageFile != nil {
+		cld, err := libs.NewCloudinary(s.cfg)
+		if err != nil {
+			s.logger.Error("failed to create cloudinary client", zap.Error(err))
+			return nil, err
+		}
+		oldPublicId := libs.ExtractPublicId(user.Avatar)
+		if err := libs.DeleteFromCloudinary(cld, oldPublicId); err != nil {
+			s.logger.Error("failed to delete old image from cloudinary", zap.Error(err))
+			return nil, err
+		}
+
+		src, err := imageFile.Open()
+		if err != nil {
+			s.logger.Error("failed to open image file", zap.Error(err))
+			return nil, err
+		}
+		defer src.Close()
+
+		buffer, err := io.ReadAll(src)
+		if err != nil {
+			s.logger.Error("failed to read image file", zap.Error(err))
+			return nil, err
+		}
+
+		newPublicId := fmt.Sprintf("avatar_%d_%d", id, time.Now().Unix())
+		uploadResult, err := libs.UploadToCloudinary(cld, buffer, newPublicId)
+		if err != nil {
+			s.logger.Error("failed to upload image to cloudinary", zap.Error(err))
+			return nil, err
+		}
+		user.Avatar = uploadResult.SecureURL
+
+		if err := s.repo.Update(user); err != nil {
+			s.logger.Error("failed to update user", zap.Error(err))
+			return nil, err
+		}
+		s.logger.Info("user updated successfully", zap.Uint("id", id))
+		return user, nil
 	}
 	s.logger.Info("user updated successfully", zap.Uint("id", id))
-	return &user, nil
+	return user, nil
 }

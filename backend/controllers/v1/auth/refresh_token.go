@@ -1,4 +1,4 @@
-package auth_controllers
+package auth_controller
 
 import (
 	"flower-backend/database"
@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func RefreshToken(c *gin.Context) {
+func (ac *authController) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{

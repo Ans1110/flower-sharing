@@ -55,30 +55,6 @@ func (r *userRepository) GetByIDWithSelect(id uint, selectFields []string) (*mod
 	return &user, nil
 }
 
-func (r *userRepository) GetByEmailWithSelect(email string, selectFields []string) (*models.User, error) {
-	var user models.User
-	if err := r.db.Select(selectFields).Where("email = ?", email).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, gorm.ErrRecordNotFound
-		}
-		r.logger.Error("failed to get user by email with select", zap.Error(err))
-		return nil, err
-	}
-	return &user, nil
-}
-
-func (r *userRepository) GetByUsernameWithSelect(username string, selectFields []string) (*models.User, error) {
-	var user models.User
-	if err := r.db.Select(selectFields).Where("username = ?", username).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, gorm.ErrRecordNotFound
-		}
-		r.logger.Error("failed to get user by username with select", zap.Error(err))
-		return nil, err
-	}
-	return &user, nil
-}
-
 func (r *userRepository) GetAll() ([]models.User, error) {
 	var users []models.User
 	if err := r.db.Find(&users).Error; err != nil {
@@ -87,4 +63,3 @@ func (r *userRepository) GetAll() ([]models.User, error) {
 	}
 	return users, nil
 }
-
