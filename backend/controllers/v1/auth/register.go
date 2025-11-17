@@ -10,13 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type RegisterInput struct {
-	Username string `json:"username" binding:"required,min=3,max=20"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8"`
-	Avatar   string `json:"avatar"`
-}
-
 // Register godoc
 //
 //	@Summary		Register a new user
@@ -24,16 +17,16 @@ type RegisterInput struct {
 //	@Tags			auth
 //	@Accept			multipart/form-data
 //	@Produce		json
-//	@Param			username	formData	string					true	"Username (3-20 characters)"
+//	@Param			username	formData	string					true	"Username (2-15 characters)"
 //	@Param			email		formData	string					true	"Email address"
 //	@Param			password	formData	string					true	"Password (min 8 characters, must include uppercase, lowercase, digit, and special character)"
 //	@Param			avatar		formData	file					false	"Avatar image file"
-//	@Success		201			{object}	map[string]interface{}	"User registered successfully"
+//	@Success		200			{object}	map[string]interface{}	"User registered successfully"
 //	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
 //	@Failure		409			{object}	map[string]interface{}	"Conflict - user already exists"
 //	@Failure		500			{object}	map[string]interface{}	"Internal server error"
-//	@Router			/auth/register [post]
 //	@Security		BearerAuth
+//	@Router			/auth/register [post]
 func (ac *authController) Register(c *gin.Context) {
 	username := c.PostForm("username")
 	email := c.PostForm("email")

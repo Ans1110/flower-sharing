@@ -26,9 +26,14 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Authenticate user with email and password, returns access and refresh tokens",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -39,13 +44,18 @@ const docTemplate = `{
                 "summary": "Login user",
                 "parameters": [
                     {
-                        "description": "Login credentials",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth_controller.LoginInput"
-                        }
+                        "type": "string",
+                        "description": "Email address",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password (min 8 characters, must include uppercase, lowercase, digit, and special character)",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -174,7 +184,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Username (3-20 characters)",
+                        "description": "Username (2-15 characters)",
                         "name": "username",
                         "in": "formData",
                         "required": true
@@ -201,7 +211,7 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "User registered successfully",
                         "schema": {
                             "type": "object",
@@ -1492,23 +1502,6 @@ const docTemplate = `{
                             "additionalProperties": true
                         }
                     }
-                }
-            }
-        }
-    },
-    "definitions": {
-        "auth_controller.LoginInput": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
                 }
             }
         }

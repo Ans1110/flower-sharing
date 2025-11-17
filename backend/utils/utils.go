@@ -71,7 +71,7 @@ func ValidateEmail(email string) bool {
 }
 
 func ValidateUsername(username string) bool {
-	re := regexp.MustCompile(`/^[a-z0-9]{2,}$/i`)
+	re := regexp.MustCompile(`^[a-z0-9]{2,15}$`)
 	return re.MatchString(username)
 }
 

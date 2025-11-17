@@ -1,15 +1,4 @@
 basePath: /api/v1
-definitions:
-  auth_controller.LoginInput:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -28,16 +17,21 @@ paths:
   /auth/login:
     post:
       consumes:
-      - application/json
+      - multipart/form-data
       description: Authenticate user with email and password, returns access and refresh
         tokens
       parameters:
-      - description: Login credentials
-        in: body
-        name: body
+      - description: Email address
+        in: formData
+        name: email
         required: true
-        schema:
-          $ref: '#/definitions/auth_controller.LoginInput'
+        type: string
+      - description: Password (min 8 characters, must include uppercase, lowercase,
+          digit, and special character)
+        in: formData
+        name: password
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -61,6 +55,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Login user
       tags:
       - auth
@@ -118,7 +114,7 @@ paths:
       description: Create a new user account with username, email, password, and optional
         avatar
       parameters:
-      - description: Username (3-20 characters)
+      - description: Username (2-15 characters)
         in: formData
         name: username
         required: true
@@ -141,7 +137,7 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: User registered successfully
           schema:
             additionalProperties: true

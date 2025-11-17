@@ -6,9 +6,10 @@ import (
 	"flower-backend/libs"
 	"flower-backend/models"
 	"net/http"
+	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // RefreshToken godoc
@@ -72,7 +73,9 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie("accessToken", accessToken, int(1*time.Hour.Seconds()), "/", "", ac.cfg.GO_ENV == "production", true)
+
 	c.JSON(http.StatusOK, gin.H{
-		"accessToken": accessToken,
+		"message": "Access token refreshed successfully",
 	})
 }
