@@ -12,6 +12,7 @@ import (
 
 type UserService interface {
 	CreateUser(user models.User) (*models.User, error)
+	CreateToken(token *models.Token) error
 	RegisterUser(username, email, password string, avatarFile *multipart.FileHeader) (*models.User, error)
 	UploadAvatar(buffer []byte, userID uint) (string, error)
 	GetUserByID(id uint) (*models.User, error)

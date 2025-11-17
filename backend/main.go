@@ -53,7 +53,7 @@ func main() {
 
 	logger.Info("starting server")
 	// db
-	database.ConnectDB(cfg)
+	database.ConnectDB(cfg, logger)
 	db := database.DB
 
 	if err := db.AutoMigrate(&models.User{}, &models.Post{}, &models.Token{}); err != nil {
@@ -80,8 +80,17 @@ func main() {
 		c.Next()
 	})
 
-	// helmet
+	// Request timeout middleware - prevents resource exhaustion
+	r.Use(middlewares.TimeoutByRoute(logger))
+
+	// helmet - security headers including XSS protection
 	r.Use(middlewares.Helmet())
+
+	// XSS Protection - sanitize JSON input
+	r.Use(middlewares.XSSProtection(logger))
+
+	// Form input validation - check for XSS patterns in form data
+	r.Use(middlewares.ValidateFormInput())
 
 	// cors
 	r.Use(cors.New(cors.Config{
@@ -109,8 +118,11 @@ func main() {
 
 	// Create HTTP server
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: r,
+		Addr:         ":" + port,
+		Handler:      r,
+		ReadTimeout:  cfg.ReadTimeout,  // Time to read the entire request
+		WriteTimeout: cfg.WriteTimeout, // Time to write the response
+		IdleTimeout:  cfg.IdleTimeout,  // Time to wait for the next request (keep-alive)
 	}
 
 	// Start server in a goroutine
@@ -161,7 +173,7 @@ func main() {
  */
 func handleServerShutdown(logger *zap.Logger) {
 	logger.Info("disconnecting from database...")
-	if err := database.DisconnectDB(); err != nil {
+	if err := database.DisconnectDB(logger); err != nil {
 		logger.Error("failed to disconnect from database", zap.Error(err))
 	} else {
 		logger.Info("database disconnected successfully")

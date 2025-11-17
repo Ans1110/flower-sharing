@@ -3,6 +3,7 @@ package user_services
 import (
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"fmt"
 	"mime/multipart"
 	"time"
@@ -39,6 +40,10 @@ func (s *userService) UploadAvatar(buffer []byte, userID uint) (string, error) {
 
 // register user
 func (s *userService) RegisterUser(username, email, password string, avatarFile *multipart.FileHeader) (*models.User, error) {
+	// Sanitize inputs to prevent XSS
+	username = utils.SanitizeUsername(username)
+	email = utils.SanitizeEmail(email)
+
 	var avatarURL string
 
 	if avatarFile != nil {
@@ -82,4 +87,13 @@ func (s *userService) RegisterUser(username, email, password string, avatarFile 
 	}
 	s.logger.Info("user created successfully", zap.String("username", username))
 	return &user, nil
+}
+
+// create token
+func (s *userService) CreateToken(token *models.Token) error {
+	if err := s.repo.CreateToken(token); err != nil {
+		s.logger.Error("failed to create token", zap.Error(err))
+		return err
+	}
+	return nil
 }

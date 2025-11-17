@@ -3,6 +3,7 @@ package post_services
 import (
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -13,6 +14,14 @@ import (
 
 // UpdatePostByIDWithSelect
 func (s *postService) UpdatePostByID(postId uint, userId uint, imageFile *multipart.FileHeader, updates map[string]any, selectFields []string) (*models.Post, error) {
+	// Sanitize updates to prevent XSS
+	if title, ok := updates["title"].(string); ok {
+		updates["title"] = utils.SanitizeString(title)
+	}
+	if content, ok := updates["content"].(string); ok {
+		updates["content"] = utils.SanitizeHTML(content)
+	}
+
 	post, err := s.repo.UpdateByIDWithSelect(postId, updates, selectFields)
 	if err != nil {
 		s.logger.Error("failed to update post", zap.Error(err))

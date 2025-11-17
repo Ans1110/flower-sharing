@@ -3,6 +3,7 @@ package post_services
 import (
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"fmt"
 	"time"
 
@@ -11,6 +12,10 @@ import (
 
 // CreatePost
 func (s *postService) CreatePost(post models.Post) (*models.Post, error) {
+	// Sanitize inputs to prevent XSS
+	post.Title = utils.SanitizeString(post.Title)
+	post.Content = utils.SanitizeHTML(post.Content)
+
 	if err := s.repo.Create(&post); err != nil {
 		s.logger.Error("failed to create post", zap.Error(err))
 		return nil, err

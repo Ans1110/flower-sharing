@@ -126,3 +126,14 @@ func ParseUint(s string, logger *zap.SugaredLogger) (uint, error) {
 	}
 	return uint(num), nil
 }
+
+// ParseInt parses a string to an int with a default value
+func ParseInt(s string) int {
+	num, err := strconv.Atoi(s)
+	if err != nil {
+		logger, _ := zap.NewProduction()
+		logger.Fatal("failed to parse int", zap.String("value", s), zap.Error(err))
+		return 0
+	}
+	return num
+}

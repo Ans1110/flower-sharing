@@ -2,6 +2,7 @@ package admin_dto
 
 import (
 	"flower-backend/models"
+	"flower-backend/utils"
 	"strings"
 	"time"
 )
@@ -27,10 +28,10 @@ func ToUserAdminDTO(user *models.User) UserAdminDTO {
 
 	return UserAdminDTO{
 		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		Avatar:    user.Avatar,
-		Role:      user.Role,
+		Username:  utils.SanitizeString(user.Username),
+		Email:     utils.SanitizeEmail(user.Email),
+		Avatar:    utils.SanitizeURL(user.Avatar),
+		Role:      utils.SanitizeString(user.Role),
 		Posts:     len(user.Posts),
 		Likes:     len(user.Likes),
 		Followers: len(user.Followers),

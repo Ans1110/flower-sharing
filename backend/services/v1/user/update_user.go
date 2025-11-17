@@ -3,6 +3,7 @@ package user_services
 import (
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -13,6 +14,14 @@ import (
 
 // UpdateUserByIDWithSelect
 func (s *userService) UpdateUserByIDWithSelect(id uint, updates map[string]any, imageFile *multipart.FileHeader, selectFields []string) (*models.User, error) {
+	// Sanitize updates to prevent XSS
+	if username, ok := updates["username"].(string); ok {
+		updates["username"] = utils.SanitizeUsername(username)
+	}
+	if email, ok := updates["email"].(string); ok {
+		updates["email"] = utils.SanitizeEmail(email)
+	}
+
 	user, err := s.repo.UpdateByIDWithSelect(id, updates, selectFields)
 	if err != nil {
 		s.logger.Error("failed to update user", zap.Error(err))

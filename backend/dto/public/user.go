@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"flower-backend/models"
+	"flower-backend/utils"
 )
 
 type PublicUserDTO struct {
@@ -19,8 +20,8 @@ func ToPublicUser(user *models.User) PublicUserDTO {
 
 	return PublicUserDTO{
 		ID:       user.ID,
-		Username: user.Username,
-		Avatar:   user.Avatar,
+		Username: utils.SanitizeString(user.Username),
+		Avatar:   utils.SanitizeURL(user.Avatar),
 	}
 }
 

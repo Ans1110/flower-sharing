@@ -2,6 +2,7 @@ package public_dto
 
 import (
 	"flower-backend/models"
+	"flower-backend/utils"
 	"time"
 )
 
@@ -23,9 +24,9 @@ func ToPublicPost(post *models.Post) PublicPostDTO {
 
 	return PublicPostDTO{
 		ID:        post.ID,
-		Title:     post.Title,
-		Content:   post.Content,
-		ImageURL:  post.ImageURL,
+		Title:     utils.SanitizeString(post.Title),
+		Content:   utils.SanitizeHTML(post.Content),
+		ImageURL:  utils.SanitizeURL(post.ImageURL),
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 		Author:    ToPublicUser(&post.User),

@@ -1,12 +1,13 @@
 package auth_controller
 
 import (
+	"errors"
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,14 +45,12 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 	userId, err := libs.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		// Check if it's a token expiration error
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"code":    "AuthenticationError",
-					"message": "Refresh token expired, please login again",
-				})
-				return
-			}
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    "AuthenticationError",
+				"message": "Refresh token expired, please login again",
+			})
+			return
 		}
 
 		// Invalid token error

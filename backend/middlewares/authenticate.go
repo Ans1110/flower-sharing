@@ -1,11 +1,12 @@
 package middlewares
 
 import (
+	"errors"
 	"flower-backend/libs"
 	"net/http"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -22,19 +23,18 @@ func Authenticate(c *gin.Context) {
 
 	userId, err := libs.VerifyAccessToken(token)
 	if err != nil {
-		// Check if it's a JWT validation error
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			// Check if it's a token expiration error
-			if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"code":    "AuthenticationError",
-					"message": "Access token expired, request a new one with refresh token",
-				})
-				c.Abort()
-				return
-			}
+		// Check if it's a token expiration error
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    "AuthenticationError",
+				"message": "Access token expired, request a new one with refresh token",
+			})
+			c.Abort()
+			return
+		}
 
-			// Handle invalid token error
+		// Check if it's a general validation error (invalid token)
+		if errors.Is(err, jwt.ErrTokenMalformed) || errors.Is(err, jwt.ErrTokenSignatureInvalid) {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code":    "AuthenticationError",
 				"message": "Access token invalid",

@@ -23,6 +23,15 @@ type Config struct {
 	CloudinaryFolder     string
 	WhiteListAdminEmails []string
 	AllowOrigins         []string
+	RequestTimeout       time.Duration
+	ReadTimeout          time.Duration
+	WriteTimeout         time.Duration
+	IdleTimeout          time.Duration
+	// Database connection pool settings
+	DBMaxOpenConns    int
+	DBMaxIdleConns    int
+	DBConnMaxLifetime time.Duration
+	DBConnMaxIdleTime time.Duration
 }
 
 func LoadConfig() *Config {
@@ -31,7 +40,7 @@ func LoadConfig() *Config {
 
 	dbURL := utils.MustGetEnv("DB_URL")
 
-	whiteListedOrigins := []string{}
+	whiteListedOrigins := strings.Split(utils.MustGetEnv("WHITE_LIST_ORIGINS"), ",")
 
 	jwtSecret := utils.MustGetEnv("JWT_SECRET")
 	jwtRefreshSecret := utils.MustGetEnv("JWT_REFRESH_SECRET")
@@ -50,6 +59,18 @@ func LoadConfig() *Config {
 
 	allowOrigins := utils.FormatOrigins()
 
+	// Timeout configurations
+	requestTimeout := utils.ParseDuration(utils.GetEnv("REQUEST_TIMEOUT", "30s"))
+	readTimeout := utils.ParseDuration(utils.GetEnv("READ_TIMEOUT", "15s"))
+	writeTimeout := utils.ParseDuration(utils.GetEnv("WRITE_TIMEOUT", "15s"))
+	idleTimeout := utils.ParseDuration(utils.GetEnv("IDLE_TIMEOUT", "60s"))
+
+	// Database connection pool configurations
+	dbMaxOpenConns := utils.ParseInt(utils.GetEnv("DB_MAX_OPEN_CONNS", "100"))
+	dbMaxIdleConns := utils.ParseInt(utils.GetEnv("DB_MAX_IDLE_CONNS", "10"))
+	dbConnMaxLifetime := utils.ParseDuration(utils.GetEnv("DB_CONN_MAX_LIFETIME", "1h"))
+	dbConnMaxIdleTime := utils.ParseDuration(utils.GetEnv("DB_CONN_MAX_IDLE_TIME", "10m"))
+
 	return &Config{
 		Port:                 port,
 		WhiteListedOrigins:   whiteListedOrigins,
@@ -67,5 +88,13 @@ func LoadConfig() *Config {
 		CloudinaryFolder:     cloudinaryFolder,
 		WhiteListAdminEmails: whiteListAdminEmails,
 		AllowOrigins:         allowOrigins,
+		RequestTimeout:       requestTimeout,
+		ReadTimeout:          readTimeout,
+		WriteTimeout:         writeTimeout,
+		IdleTimeout:          idleTimeout,
+		DBMaxOpenConns:       dbMaxOpenConns,
+		DBMaxIdleConns:       dbMaxIdleConns,
+		DBConnMaxLifetime:    dbConnMaxLifetime,
+		DBConnMaxIdleTime:    dbConnMaxIdleTime,
 	}
 }

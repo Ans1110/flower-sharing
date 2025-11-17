@@ -1,7 +1,6 @@
 package auth_controller
 
 import (
-	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
 	"flower-backend/utils"
@@ -89,7 +88,7 @@ func (ac *authController) Register(c *gin.Context) {
 		UserID: user.ID,
 	}
 
-	if err := database.DB.Create(&token).Error; err != nil {
+	if err := ac.svc.CreateToken(&token); err != nil {
 		ac.logger.Error("failed to create token", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
 		return
