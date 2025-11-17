@@ -9,7 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// DELETE /api/v1/post/:id
+// DeletePostByID godoc
+//
+//	@Summary		Delete post
+//	@Description	Delete a post by ID
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int						true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}	"Post deleted successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		403	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}	"Post not found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/post/{id} [delete]
 func (pc *postController) DeletePostByID(c *gin.Context) {
 
 	postId := c.Param("id")

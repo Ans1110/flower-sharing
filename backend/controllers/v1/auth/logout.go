@@ -10,6 +10,17 @@ import (
 	"go.uber.org/zap"
 )
 
+// Logout godoc
+//
+//	@Summary		Logout user
+//	@Description	Logout user by invalidating the refresh token
+//	@Tags			auth
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}	"Logged out successfully"
+//	@Failure		401	{object}	map[string]interface{}	"Unauthorized - invalid or missing refresh token"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/auth/logout [post]
 func (ac *authController) Logout(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {

@@ -144,4 +144,3 @@ func (r *userRepository) GetFollowingPosts(userID uint, page, limit int) ([]mode
 	}
 	return posts, total, nil
 }
-

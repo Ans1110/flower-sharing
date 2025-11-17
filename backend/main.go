@@ -17,8 +17,32 @@ import (
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
+
+	_ "flower-backend/docs" // Import generated docs
 )
+
+//	@title			Flower Sharing API
+//	@version		1.0
+//	@description	A social media API for sharing flower photos and connecting with other flower enthusiasts.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.flower-sharing.com/support
+//	@contact.email	peter0928091516@gmail.com
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@host		localhost:8080
+//	@BasePath	/api/v1
+
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Type "Bearer" followed by a space and JWT token.
 
 func main() {
 	// log
@@ -41,9 +65,11 @@ func main() {
 	r := gin.New()
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
+	// http logger
 	if cfg.GO_ENV == "production" {
 		r.Use(middlewares.HttpLogger)
 	}
+	// panic recovery
 	r.Use(func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -69,6 +95,9 @@ func main() {
 
 	// Rate limiter: 60 requests per minute per IP
 	r.Use(middlewares.RateLimiter())
+
+	// Swagger documentation route
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Setup routes
 	v1Routes.Routes(r)
@@ -96,6 +125,7 @@ func main() {
 	}()
 
 	logger.Info("server started")
+	logger.Info("swagger documentation available at http://localhost:" + port + "/swagger/index.html")
 
 	/**
 	 * Listens for termination signals (`SIGTERM` and `SIGINT`).

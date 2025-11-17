@@ -10,7 +10,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// GET /api/v1/post/:id
+// GetPostByID godoc
+//
+//	@Summary		Get post by ID
+//	@Description	Retrieve a single post by its ID
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int	true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/post/{id} [get]
 func (pc *postController) GetPostByID(c *gin.Context) {
 
 	postId := c.Param("id")
@@ -34,7 +44,18 @@ func (pc *postController) GetPostByID(c *gin.Context) {
 	pc.logger.Info("post fetched successfully", zap.String("post_id", postId))
 }
 
-// GET /api/v1/post/user/:user_id/all
+// GetPostAllByUserID godoc
+//
+//	@Summary		Get all posts by user ID
+//	@Description	Retrieve all posts by a specific user
+//	@Tags			posts
+//	@Produce		json
+//	@Param			user_id	path		int						true	"User ID"
+//	@Success		200		{object}	map[string]interface{}	"Posts fetched successfully"
+//	@Failure		404		{object}	map[string]interface{}	"Posts not found"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/user/{user_id}/all [get]
 func (pc *postController) GetPostAllByUserID(c *gin.Context) {
 
 	userId := c.Param("user_id")
@@ -58,7 +79,17 @@ func (pc *postController) GetPostAllByUserID(c *gin.Context) {
 	pc.logger.Info("posts fetched successfully", zap.String("user_id", userId))
 }
 
-// GET /api/v1/post/all
+// GetPostAll godoc
+//
+//	@Summary		Get all posts
+//	@Description	Retrieve all posts
+//	@Tags			posts
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}	"Posts fetched successfully"
+//	@Failure		404	{object}	map[string]interface{}	"Posts not found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/all [get]
 func (pc *postController) GetPostAll(c *gin.Context) {
 	posts, err := pc.svc.GetPostAll()
 	if err != nil {
@@ -75,7 +106,18 @@ func (pc *postController) GetPostAll(c *gin.Context) {
 	pc.logger.Info("posts fetched successfully")
 }
 
-// GET /api/v1/post/search
+// SearchPosts godoc
+//
+//	@Summary		Search posts
+//	@Description	Search for posts by query string
+//	@Tags			posts
+//	@Produce		json
+//	@Param			query	query		string					true	"Search query"
+//	@Success		200		{object}	map[string]interface{}	"Posts searched successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/search [get]
 func (pc *postController) SearchPosts(c *gin.Context) {
 	query := c.Query("query")
 	if query == "" {
@@ -91,7 +133,19 @@ func (pc *postController) SearchPosts(c *gin.Context) {
 	pc.logger.Info("posts searched successfully", zap.String("query", query))
 }
 
-// GET /api/v1/post/pagination
+// GetPostWithPagination godoc
+//
+//	@Summary		Get posts with pagination
+//	@Description	Retrieve paginated list of posts
+//	@Tags			posts
+//	@Produce		json
+//	@Param			page	query		int						true	"Page number"
+//	@Param			limit	query		int						true	"Items per page"
+//	@Success		200		{object}	map[string]interface{}	"Posts fetched successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/pagination [get]
 func (pc *postController) GetPostWithPagination(c *gin.Context) {
 	page := c.Query("page")
 	limit := c.Query("limit")

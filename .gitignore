@@ -1,0 +1,57 @@
+# Root level gitignore for Flower Sharing project
+
+# Backend
+backend/flower-backend
+backend/*.exe
+backend/*.log
+backend/tmp/
+backend/.env
+backend/.env.*
+
+# Frontend (if you have one)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.env
+frontend/.env.*
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Editor backup
+*~
+*.bak
+*.orig
+

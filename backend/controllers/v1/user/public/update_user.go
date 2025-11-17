@@ -11,7 +11,24 @@ import (
 	"go.uber.org/zap"
 )
 
-// PUT /api/v1/user/id/:id/select?select=field1,field2,field3
+// UpdateUserByIDWithSelect godoc
+//
+//	@Summary		Update user profile
+//	@Description	Update specific fields of user profile
+//	@Tags			users
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id			path		int						true	"User ID"
+//	@Param			select		query		string					true	"Fields to update (comma-separated)"
+//	@Param			username	formData	string					false	"Username"
+//	@Param			email		formData	string					false	"Email"
+//	@Param			image		formData	file					false	"Avatar image"
+//	@Success		200			{object}	map[string]interface{}	"User updated successfully"
+//	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		403			{object}	map[string]interface{}	"Forbidden - you are not the owner of this user"
+//	@Failure		500			{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/id/{id}/select [put]
 func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	userId := c.Param("id")

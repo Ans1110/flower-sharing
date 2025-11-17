@@ -84,4 +84,3 @@ func (r *postRepository) GetWithPagination(page, limit int) ([]models.Post, int6
 	}
 	return posts, total, nil
 }
-

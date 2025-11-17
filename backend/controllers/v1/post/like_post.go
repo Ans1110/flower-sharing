@@ -8,7 +8,18 @@ import (
 	"go.uber.org/zap"
 )
 
-// POST /api/v1/post/:id/like
+// LikePost godoc
+//
+//	@Summary		Like a post
+//	@Description	Add a like to a post
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int						true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}	"Post liked successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/post/{id}/like [post]
 func (pc *postController) LikePost(c *gin.Context) {
 
 	postId := c.Param("id")
@@ -26,7 +37,18 @@ func (pc *postController) LikePost(c *gin.Context) {
 	pc.logger.Info("post liked successfully", zap.Uint("post_id", uint(postIdUint)))
 }
 
-// DELETE /api/v1/post/:id/dislike
+// DislikePost godoc
+//
+//	@Summary		Unlike a post
+//	@Description	Remove a like from a post
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int						true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}	"Post disliked successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Security		BearerAuth
+//	@Router			/post/{id}/dislike [delete]
 func (pc *postController) DislikePost(c *gin.Context) {
 
 	postId := c.Param("id")
@@ -44,7 +66,18 @@ func (pc *postController) DislikePost(c *gin.Context) {
 	pc.logger.Info("post disliked successfully", zap.Uint("post_id", uint(postIdUint)))
 }
 
-// GET /api/v1/post/:id/likes
+// GetPostLikes godoc
+//
+//	@Summary		Get post likes
+//	@Description	Retrieve the number of likes for a post
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int						true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}	"Post likes fetched successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/{id}/likes [get]
 func (pc *postController) GetPostLikes(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
@@ -61,7 +94,18 @@ func (pc *postController) GetPostLikes(c *gin.Context) {
 	pc.logger.Info("post likes fetched successfully", zap.Uint("post_id", uint(postIdUint)))
 }
 
-// GET /api/v1/post/user/:user_id/liked
+// GetUserLikedPosts godoc
+//
+//	@Summary		Get user liked posts
+//	@Description	Retrieve the posts liked by a user
+//	@Tags			posts
+//	@Produce		json
+//	@Param			user_id	path		int						true	"User ID"
+//	@Success		200		{object}	map[string]interface{}	"User liked posts fetched successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/user/{user_id}/liked [get]
 func (pc *postController) GetUserLikedPosts(c *gin.Context) {
 	userId := c.Param("user_id")
 	userIdUint, err := utils.ParseUint(userId, pc.logger)

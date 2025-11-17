@@ -10,7 +10,21 @@ import (
 	"gorm.io/gorm"
 )
 
-// POST /api/v1/user/follow/:follower_id/:following_id
+// FollowUser
+//
+//	@Summary		Follow a user
+//	@Description	Follow another user
+//	@Tags			users
+//	@Produce		json
+//	@Param			follower_id		path		int	true	"Follower user ID"
+//	@Param			following_id	path		int	true	"User to follow ID"
+//	@Success		200				{object}	map[string]interface{}
+//	@Failure		400				{object}	map[string]interface{}
+//	@Failure		404				{object}	map[string]interface{}
+//	@Failure		500				{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Security		BearerAuth
+//	@Router			/user/follow/{follower_id}/{following_id} [post]
 func (uc *userController) FollowUser(c *gin.Context) {
 	followerID := c.Param("follower_id")
 	followingID := c.Param("following_id")
@@ -37,7 +51,16 @@ func (uc *userController) FollowUser(c *gin.Context) {
 	uc.logger.Info("user followed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
 }
 
-// POST /api/v1/user/unfollow/:follower_id/:following_id
+// UnfollowUser godoc
+//
+//	@Summary		Unfollow a user
+//	@Description	Unfollow another user
+//	@Tags			users
+//	@Produce		json
+//	@Param			follower_id		path		int	true	"Follower user ID"
+//	@Param			following_id	path		int	true	"User to unfollow ID"
+//	@Success		200				{object}	map[string]interface{}
+//	@Failure		400				{object}	map[string]interface{}
 func (uc *userController) UnfollowUser(c *gin.Context) {
 	followerID := c.Param("follower_id")
 	followingID := c.Param("following_id")
@@ -64,7 +87,18 @@ func (uc *userController) UnfollowUser(c *gin.Context) {
 	uc.logger.Info("user unfollowed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
 }
 
-// GET /api/v1/user/followers/:user_id
+// GetUserFollowers godoc
+//
+//	@Summary		Get user followers
+//	@Description	Get list of users following this user
+//	@Tags			users
+//	@Produce		json
+//	@Param			user_id	path		int	true	"User ID"
+//	@Success		200		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/user/followers/{user_id} [get]
 func (uc *userController) GetUserFollowers(c *gin.Context) {
 	userID := c.Param("user_id")
 	userIDUint, err := utils.ParseUint(userID, uc.logger)
@@ -81,7 +115,18 @@ func (uc *userController) GetUserFollowers(c *gin.Context) {
 	uc.logger.Info("user followers fetched successfully", zap.String("user_id", userID))
 }
 
-// GET /api/v1/user/following/:user_id
+// GetUserFollowing godoc
+//
+//	@Summary		Get user following
+//	@Description	Get list of users followed by this user
+//	@Tags			users
+//	@Produce		json
+//	@Param			user_id	path		int	true	"User ID"
+//	@Success		200		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/user/following/{user_id} [get]
 func (uc *userController) GetUserFollowing(c *gin.Context) {
 	userID := c.Param("user_id")
 	userIDUint, err := utils.ParseUint(userID, uc.logger)
@@ -98,7 +143,18 @@ func (uc *userController) GetUserFollowing(c *gin.Context) {
 	uc.logger.Info("user following fetched successfully", zap.String("user_id", userID))
 }
 
-// GET /api/v1/user/followers-count/:user_id
+// GetUserFollowersCount godoc
+//
+//	@Summary		Get user followers count
+//	@Description	Get the number of users following this user
+//	@Tags			users
+//	@Produce		json
+//	@Param			user_id	path		int	true	"User ID"
+//	@Success		200		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/user/followers-count/{user_id} [get]
 func (uc *userController) GetUserFollowersCount(c *gin.Context) {
 	userID := c.Param("user_id")
 	userIDUint, err := utils.ParseUint(userID, uc.logger)
@@ -115,7 +171,18 @@ func (uc *userController) GetUserFollowersCount(c *gin.Context) {
 	uc.logger.Info("user followers count fetched successfully", zap.String("user_id", userID))
 }
 
-// GET /api/v1/user/following-count/:user_id
+// GetUserFollowingCount godoc
+//
+//	@Summary		Get user following count
+//	@Description	Get the number of users followed by this user
+//	@Tags			users
+//	@Produce		json
+//	@Param			user_id	path		int	true	"User ID"
+//	@Success		200		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/user/following-count/{user_id} [get]
 func (uc *userController) GetUserFollowingCount(c *gin.Context) {
 	userID := c.Param("user_id")
 	userIDUint, err := utils.ParseUint(userID, uc.logger)
@@ -132,7 +199,20 @@ func (uc *userController) GetUserFollowingCount(c *gin.Context) {
 	uc.logger.Info("user following count fetched successfully", zap.String("user_id", userID))
 }
 
-// GET /api/v1/user/following-posts/:user_id
+// GetUserFollowingPosts godoc
+//
+//	@Summary		Get user following posts
+//	@Description	Get posts from users that this user follows
+//	@Tags			users
+//	@Produce		json
+//	@Param			user_id	path		int	true	"User ID"
+//	@Param			page	query		int	true	"Page number"
+//	@Param			limit	query		int	true	"Items per page"
+//	@Success		200		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Router			/user/following-posts/{user_id} [get]
 func (uc *userController) GetUserFollowingPosts(c *gin.Context) {
 	userID := c.Param("user_id")
 	userIDUint, err := utils.ParseUint(userID, uc.logger)

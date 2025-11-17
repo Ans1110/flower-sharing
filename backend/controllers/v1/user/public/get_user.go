@@ -11,7 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// GET /api/v1/user/:id
+// GetUserByID godoc
+//
+//	@Summary		Get user by ID
+//	@Description	Retrieve public user information by ID
+//	@Tags			users
+//	@Produce		json
+//	@Param			id	path		int						true	"User ID"
+//	@Success		200	{object}	map[string]interface{}	"User fetched successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		404	{object}	map[string]interface{}	"User not found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/{id} [get]
 func (uc *userController) GetUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
@@ -33,7 +45,19 @@ func (uc *userController) GetUserByID(c *gin.Context) {
 	uc.logger.Info("user fetched successfully", zap.Uint("user_id", uint(userIdUint)))
 }
 
-// GET /api/v1/user/:email
+// GetUserByEmail godoc
+//
+//	@Summary		Get user by email
+//	@Description	Retrieve public user information by email
+//	@Tags			users
+//	@Produce		json
+//	@Param			email	path		string					true	"User email"
+//	@Success		200		{object}	map[string]interface{}	"User fetched successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		404		{object}	map[string]interface{}	"User not found"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/email/{email} [get]
 func (uc *userController) GetUserByEmail(c *gin.Context) {
 	email := c.Param("email")
 	if !utils.ValidateEmail(email) {
@@ -54,7 +78,19 @@ func (uc *userController) GetUserByEmail(c *gin.Context) {
 	uc.logger.Info("user fetched successfully", zap.String("email", email))
 }
 
-// GET /api/v1/user/:username
+// GetUserByUsername godoc
+//
+//	@Summary		Get user by username
+//	@Description	Retrieve public user information by username
+//	@Tags			users
+//	@Produce		json
+//	@Param			username	path		string					true	"User username"
+//	@Success		200			{object}	map[string]interface{}	"User fetched successfully"
+//	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		404			{object}	map[string]interface{}	"User not found"
+//	@Failure		500			{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/username/{username} [get]
 func (uc *userController) GetUserByUsername(c *gin.Context) {
 	username := c.Param("username")
 	if !utils.ValidateUsername(username) {
@@ -75,7 +111,16 @@ func (uc *userController) GetUserByUsername(c *gin.Context) {
 	uc.logger.Info("user fetched successfully", zap.String("username", username))
 }
 
-// GET /api/v1/user/all
+// GetUserAll godoc
+//
+//	@Summary		Get all users
+//	@Description	Retrieve all public users
+//	@Tags			users
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}	"All users fetched successfully"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/all [get]
 func (uc *userController) GetUserAll(c *gin.Context) {
 	users, err := uc.svc.GetUserAll()
 	if err != nil {
@@ -86,7 +131,20 @@ func (uc *userController) GetUserAll(c *gin.Context) {
 	uc.logger.Info("all users fetched successfully", zap.Int("users_count", len(users)))
 }
 
-// GET /api/v1/user/id/:id/select?select=field1,field2,field3
+// GetUserByIDWithSelect godoc
+//
+//	@Summary		Get user by ID with select
+//	@Description	Retrieve public user information by ID with select fields
+//	@Tags			users
+//	@Produce		json
+//	@Param			id		path		int						true	"User ID"
+//	@Param			select	query		string					true	"Fields to update (comma-separated)"
+//	@Success		200		{object}	map[string]interface{}	"User fetched successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		404		{object}	map[string]interface{}	"User not found"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/id/{id}/select [get]
 func (uc *userController) GetUserByIDWithSelect(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)

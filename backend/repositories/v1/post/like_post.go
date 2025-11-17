@@ -94,4 +94,3 @@ func (r *postRepository) GetUserLikedPosts(userID uint, page, limit int) ([]mode
 	}
 	return posts, total, nil
 }
-

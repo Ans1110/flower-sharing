@@ -9,7 +9,20 @@ import (
 	"go.uber.org/zap"
 )
 
-// POST /api/v1/post
+// CreatePost godoc
+//
+//	@Summary		Create a new post
+//	@Description	Create a post with title, content, and image
+//	@Tags			posts
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			title	formData	string	true	"Post title"
+//	@Param			content	formData	string	true	"Post content"
+//	@Param			image	formData	file	true	"Post image"
+//	@Success		201		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Security		BearerAuth
+//	@Router			/post [post]
 func (pc *postController) CreatePost(c *gin.Context) {
 
 	userId := c.GetUint("user_id")

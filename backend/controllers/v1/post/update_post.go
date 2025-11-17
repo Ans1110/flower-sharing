@@ -9,7 +9,24 @@ import (
 	"go.uber.org/zap"
 )
 
-// PUT /api/v1/post/:id?select=field1,field2,field3
+// UpdatePostByIDWithSelect godoc
+//
+//	@Summary		Update post by ID with select
+//	@Description	Update a post by ID with select fields
+//	@Tags			posts
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id		path		int						true	"Post ID"
+//	@Param			select	query		string					true	"Fields to update (comma-separated)"
+//	@Param			title	formData	string					false	"Post title"
+//	@Param			content	formData	string					false	"Post content"
+//	@Param			image	formData	file					false	"Post image"
+//	@Success		200		{object}	map[string]interface{}	"Post updated successfully"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		403		{object}	map[string]interface{}	"Forbidden - you are not the owner of this post"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/post/{id} [put]
 func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 
 	postId := c.Param("id")

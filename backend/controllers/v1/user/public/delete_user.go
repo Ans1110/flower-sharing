@@ -9,7 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// DELETE /api/v1/user/:id
+// DeleteUserByID godoc
+//
+//	@Summary		Delete user
+//	@Description	Delete a user by ID
+//	@Tags			users
+//	@Produce		json
+//	@Param			id	path		int						true	"User ID"
+//	@Success		200	{object}	map[string]interface{}	"User deleted successfully"
+//	@Failure		400	{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		403	{object}	map[string]interface{}	"Forbidden - you are not the owner of this user"
+//	@Failure		404	{object}	map[string]interface{}	"User not found"
+//	@Failure		500	{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/user/{id} [delete]
 func (uc *userController) DeleteUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)

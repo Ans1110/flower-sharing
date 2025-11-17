@@ -18,6 +18,20 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Login godoc
+//
+//	@Summary		Login user
+//	@Description	Authenticate user with email and password, returns access and refresh tokens
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		LoginInput				true	"Login credentials"
+//	@Success		200		{object}	map[string]interface{}	"Login successful, returns tokens"
+//	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		401		{object}	map[string]interface{}	"Unauthorized - invalid credentials"
+//	@Failure		500		{object}	map[string]interface{}	"Internal server error"
+//	@Securuty		BearerAuth
+//	@Router			/auth/login [post]
 func (ac *authController) Login(c *gin.Context) {
 	var body LoginInput
 	if err := c.ShouldBindJSON(&body); err != nil {

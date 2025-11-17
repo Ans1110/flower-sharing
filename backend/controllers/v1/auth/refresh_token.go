@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RefreshToken godoc
+//
+//	@Summary		Refresh access token
+//	@Description	Get new access token using refresh token
+//	@Tags			auth
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}
+//	@Failure		401	{object}	map[string]interface{}
+//	@Security		BearerAuth
+//	@Router			/auth/refresh-token [post]
 func (ac *authController) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {

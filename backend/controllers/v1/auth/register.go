@@ -18,6 +18,23 @@ type RegisterInput struct {
 	Avatar   string `json:"avatar"`
 }
 
+// Register godoc
+//
+//	@Summary		Register a new user
+//	@Description	Create a new user account with username, email, password, and optional avatar
+//	@Tags			auth
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			username	formData	string					true	"Username (3-20 characters)"
+//	@Param			email		formData	string					true	"Email address"
+//	@Param			password	formData	string					true	"Password (min 8 characters, must include uppercase, lowercase, digit, and special character)"
+//	@Param			avatar		formData	file					false	"Avatar image file"
+//	@Success		201			{object}	map[string]interface{}	"User registered successfully"
+//	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
+//	@Failure		409			{object}	map[string]interface{}	"Conflict - user already exists"
+//	@Failure		500			{object}	map[string]interface{}	"Internal server error"
+//	@Router			/auth/register [post]
+//	@Security		BearerAuth
 func (ac *authController) Register(c *gin.Context) {
 	username := c.PostForm("username")
 	email := c.PostForm("email")

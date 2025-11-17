@@ -1,0 +1,117 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+flower-backend
+main
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history
+
+# IDE - IntelliJ IDEA / GoLand
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Swagger generated files (optional - keep if you want to version control)
+# docs/docs.go
+# docs/swagger.json
+# docs/swagger.yaml
+
+# Air live reload (if using)
+tmp/
+.air.toml
+
+# Build artifacts
+dist/
+build/
+bin/
+
+# Coverage reports
+coverage.html
+coverage.out
+*.coverprofile
+
+# Debug files
+debug
+__debug_bin
+
+# Module cache
+go.sum.backup
+
+# Editor backup files
+*~
+*.bak
+*.orig
+
+# Cloudinary config (if stored locally)
+cloudinary.yml
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Configuration files with sensitive data
+config.local.yaml
+config.local.json
+secrets.yaml
+secrets.json
+
