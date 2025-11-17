@@ -24,7 +24,7 @@ func (ac *authController) Register(c *gin.Context) {
 	password := c.PostForm("password")
 	avatar, err := c.FormFile("avatar")
 	if err != nil {
-		zap.L().Error("failed to get avatar file", zap.Error(err))
+		ac.logger.Error("failed to get avatar file", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get avatar file"})
 		return
 	}
@@ -51,7 +51,7 @@ func (ac *authController) Register(c *gin.Context) {
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
-		zap.L().Error("failed to hash password", zap.Error(err))
+		ac.logger.Error("failed to hash password", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
 		return
 	}
@@ -73,7 +73,7 @@ func (ac *authController) Register(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&token).Error; err != nil {
-		zap.L().Error("failed to create token", zap.Error(err))
+		ac.logger.Error("failed to create token", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
 		return
 	}

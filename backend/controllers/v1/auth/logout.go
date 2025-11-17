@@ -13,20 +13,20 @@ import (
 func (ac *authController) Logout(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {
-		zap.L().Error("failed to get refresh token", zap.Error(err))
+		ac.logger.Error("failed to get refresh token", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token is required"})
 		return
 	}
 
 	userId, err := libs.VerifyRefreshToken(refreshToken)
 	if err != nil {
-		zap.L().Error("failed to verify refresh token", zap.Error(err))
+		ac.logger.Error("failed to verify refresh token", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
 		return
 	}
 
 	if err := database.DB.Where("token = ?", refreshToken).Delete(&models.Token{}).Error; err != nil {
-		zap.L().Error("failed to logout", zap.Error(err))
+		ac.logger.Error("failed to logout", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -35,5 +35,5 @@ func (ac *authController) Logout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully", "userId": userId})
 
-	zap.L().Info("Logged out successfully", zap.Uint("user_id", userId))
+	ac.logger.Info("Logged out successfully", zap.Uint("user_id", userId))
 }

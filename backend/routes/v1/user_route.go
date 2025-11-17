@@ -25,6 +25,8 @@ func UserRoutes(r *gin.RouterGroup) {
 		user.GET("/id/:id/select", userCtrl.GetUserByIDWithSelect)
 		// Update routes
 		user.PUT("/id/:id/select", userCtrl.UpdateUserByIDWithSelect)
+		// Delete routes
+		user.DELETE("/:id", userCtrl.DeleteUserByID)
 	}
 
 	{

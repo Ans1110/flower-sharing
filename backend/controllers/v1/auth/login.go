@@ -31,11 +31,11 @@ func (ac *authController) Login(c *gin.Context) {
 	user, err := ac.svc.GetUserByEmail(body.Email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("user not found", zap.String("email", body.Email))
+			ac.logger.Error("user not found", zap.String("email", body.Email))
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
-		zap.L().Error("failed to get user", zap.Error(err))
+		ac.logger.Error("failed to get user", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -58,7 +58,7 @@ func (ac *authController) Login(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&token).Error; err != nil {
-		zap.L().Error("failed to create token", zap.Error(err))
+		ac.logger.Error("failed to create token", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
 		return
 	}
@@ -78,5 +78,5 @@ func (ac *authController) Login(c *gin.Context) {
 		"accessToken": accessToken,
 	})
 
-	zap.L().Info("Login successful", zap.String("user", user.Username), zap.String("accessToken", accessToken))
+	ac.logger.Info("Login successful", zap.String("user", user.Username), zap.String("accessToken", accessToken))
 }

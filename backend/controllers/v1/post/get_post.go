@@ -14,7 +14,7 @@ import (
 func (pc *postController) GetPostByID(c *gin.Context) {
 
 	postId := c.Param("id")
-	postIdUint, err := utils.ParseUint(postId, zap.L().Sugar())
+	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -22,22 +22,23 @@ func (pc *postController) GetPostByID(c *gin.Context) {
 	post, err := pc.svc.GetPostByID(uint(postIdUint))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("post not found", zap.String("post_id", postId))
+			pc.logger.Error("post not found", zap.String("post_id", postId))
 			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 			return
 		}
+		pc.logger.Error("failed to get post", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get post"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"post": post})
-	zap.L().Info("post fetched successfully", zap.String("post_id", postId))
+	pc.logger.Info("post fetched successfully", zap.String("post_id", postId))
 }
 
 // GET /api/v1/post/user/:user_id/all
 func (pc *postController) GetPostAllByUserID(c *gin.Context) {
 
 	userId := c.Param("user_id")
-	userIdUint, err := utils.ParseUint(userId, zap.L().Sugar())
+	userIdUint, err := utils.ParseUint(userId, pc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -45,16 +46,16 @@ func (pc *postController) GetPostAllByUserID(c *gin.Context) {
 	posts, err := pc.svc.GetPostAllByUserID(uint(userIdUint))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("posts not found", zap.String("user_id", userId))
+			pc.logger.Error("posts not found", zap.String("user_id", userId))
 			c.JSON(http.StatusNotFound, gin.H{"error": "Posts not found"})
 			return
 		}
-		zap.L().Error("failed to get posts", zap.Error(err))
+		pc.logger.Error("failed to get posts", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
-	zap.L().Info("posts fetched successfully", zap.String("user_id", userId))
+	pc.logger.Info("posts fetched successfully", zap.String("user_id", userId))
 }
 
 // GET /api/v1/post/all
@@ -62,16 +63,16 @@ func (pc *postController) GetPostAll(c *gin.Context) {
 	posts, err := pc.svc.GetPostAll()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("posts not found", zap.Error(err))
+			pc.logger.Error("posts not found", zap.Error(err))
 			c.JSON(http.StatusNotFound, gin.H{"error": "Posts not found"})
 			return
 		}
-		zap.L().Error("failed to get posts", zap.Error(err))
+		pc.logger.Error("failed to get posts", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
-	zap.L().Info("posts fetched successfully")
+	pc.logger.Info("posts fetched successfully")
 }
 
 // GET /api/v1/post/search
@@ -87,7 +88,7 @@ func (pc *postController) SearchPosts(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
-	zap.L().Info("posts searched successfully", zap.String("query", query))
+	pc.logger.Info("posts searched successfully", zap.String("query", query))
 }
 
 // GET /api/v1/post/pagination
@@ -114,5 +115,5 @@ func (pc *postController) GetPostWithPagination(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts, "total": total})
-	zap.L().Info("posts fetched successfully with pagination", zap.Int("page", pageInt), zap.Int("limit", limitInt))
+	pc.logger.Info("posts fetched successfully with pagination", zap.Int("page", pageInt), zap.Int("limit", limitInt))
 }

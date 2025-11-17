@@ -8,7 +8,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func (ac *authController) RefreshToken(c *gin.Context) {
@@ -56,7 +55,7 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 	// Generate new access token
 	accessToken := libs.GenerateAccessToken(userId)
 	if accessToken == "" {
-		zap.L().Error("Error during refresh token: failed to generate access token")
+		ac.logger.Error("Error during refresh token: failed to generate access token")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    "ServerError",
 			"message": "Internal server error",

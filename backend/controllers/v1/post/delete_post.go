@@ -13,7 +13,7 @@ import (
 func (pc *postController) DeletePostByID(c *gin.Context) {
 
 	postId := c.Param("id")
-	postIdUint, err := utils.ParseUint(postId, zap.L().Sugar())
+	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -30,7 +30,7 @@ func (pc *postController) DeletePostByID(c *gin.Context) {
 	}
 	if err := pc.svc.DeletePostByID(uint(postIdUint), userId); err != nil {
 		if err == gorm.ErrRecordNotFound {
-			zap.L().Error("post not found", zap.String("post_id", postId))
+			pc.logger.Error("post not found", zap.String("post_id", postId))
 			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 			return
 		}
@@ -38,5 +38,5 @@ func (pc *postController) DeletePostByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})
-	zap.L().Info("post deleted successfully", zap.String("post_id", postId), zap.Uint("user_id", userId))
+	pc.logger.Info("post deleted successfully", zap.String("post_id", postId), zap.Uint("user_id", userId))
 }

@@ -15,9 +15,19 @@ import (
 func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	userId := c.Param("id")
-	userIdUint, err := utils.ParseUint(userId, zap.L().Sugar())
+	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ownership, err := uc.svc.CheckUserOwnership(uint(userIdUint), c.GetUint("user_id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check user ownership"})
+		return
+	}
+	if !ownership {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this user"})
 		return
 	}
 
@@ -32,7 +42,7 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 	email := c.PostForm("email")
 	imageFile, err := c.FormFile("image")
 	if err != nil {
-		zap.L().Error("failed to get image file", zap.Error(err))
+		uc.logger.Error("failed to get image file", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
 		return
 	}

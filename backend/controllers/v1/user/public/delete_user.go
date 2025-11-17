@@ -1,4 +1,4 @@
-package admin_user_controller
+package public_user_controller
 
 import (
 	"flower-backend/utils"
@@ -9,12 +9,21 @@ import (
 	"gorm.io/gorm"
 )
 
-// DELETE /api/v1/admin/user/:id
-func (uc *adminUserController) DeleteUserByID(c *gin.Context) {
+// DELETE /api/v1/user/:id
+func (uc *userController) DeleteUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ownership, err := uc.svc.CheckUserOwnership(uint(userIdUint), c.GetUint("user_id"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check user ownership"})
+		return
+	}
+	if !ownership {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this user"})
 		return
 	}
 	if err := uc.svc.DeleteUserByID(uint(userIdUint)); err != nil {

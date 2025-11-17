@@ -14,7 +14,7 @@ import (
 func (uc *adminUserController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	userId := c.Param("id")
-	userIdUint, err := utils.ParseUint(userId, zap.L().Sugar())
+	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -31,7 +31,7 @@ func (uc *adminUserController) UpdateUserByIDWithSelect(c *gin.Context) {
 	email := c.PostForm("email")
 	imageFile, err := c.FormFile("image")
 	if err != nil {
-		zap.L().Error("failed to get image file", zap.Error(err))
+		uc.logger.Error("failed to get image file", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
 		return
 	}

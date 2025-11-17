@@ -14,12 +14,12 @@ import (
 func (uc *userController) FollowUser(c *gin.Context) {
 	followerID := c.Param("follower_id")
 	followingID := c.Param("following_id")
-	followerIDUint, err := utils.ParseUint(followerID, zap.L().Sugar())
+	followerIDUint, err := utils.ParseUint(followerID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	followingIDUint, err := utils.ParseUint(followingID, zap.L().Sugar())
+	followingIDUint, err := utils.ParseUint(followingID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -34,19 +34,19 @@ func (uc *userController) FollowUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User followed successfully"})
-	zap.L().Info("user followed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
+	uc.logger.Info("user followed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
 }
 
 // POST /api/v1/user/unfollow/:follower_id/:following_id
 func (uc *userController) UnfollowUser(c *gin.Context) {
 	followerID := c.Param("follower_id")
 	followingID := c.Param("following_id")
-	followerIDUint, err := utils.ParseUint(followerID, zap.L().Sugar())
+	followerIDUint, err := utils.ParseUint(followerID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	followingIDUint, err := utils.ParseUint(followingID, zap.L().Sugar())
+	followingIDUint, err := utils.ParseUint(followingID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -61,13 +61,13 @@ func (uc *userController) UnfollowUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User unfollowed successfully"})
-	zap.L().Info("user unfollowed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
+	uc.logger.Info("user unfollowed successfully", zap.String("follower_id", followerID), zap.String("following_id", followingID))
 }
 
 // GET /api/v1/user/followers/:user_id
 func (uc *userController) GetUserFollowers(c *gin.Context) {
 	userID := c.Param("user_id")
-	userIDUint, err := utils.ParseUint(userID, zap.L().Sugar())
+	userIDUint, err := utils.ParseUint(userID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -78,13 +78,13 @@ func (uc *userController) GetUserFollowers(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"followers": publicuserdto.ToPublicUsers(followers)})
-	zap.L().Info("user followers fetched successfully", zap.String("user_id", userID))
+	uc.logger.Info("user followers fetched successfully", zap.String("user_id", userID))
 }
 
 // GET /api/v1/user/following/:user_id
 func (uc *userController) GetUserFollowing(c *gin.Context) {
 	userID := c.Param("user_id")
-	userIDUint, err := utils.ParseUint(userID, zap.L().Sugar())
+	userIDUint, err := utils.ParseUint(userID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -95,13 +95,13 @@ func (uc *userController) GetUserFollowing(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"following": publicuserdto.ToPublicUsers(following)})
-	zap.L().Info("user following fetched successfully", zap.String("user_id", userID))
+	uc.logger.Info("user following fetched successfully", zap.String("user_id", userID))
 }
 
 // GET /api/v1/user/followers-count/:user_id
 func (uc *userController) GetUserFollowersCount(c *gin.Context) {
 	userID := c.Param("user_id")
-	userIDUint, err := utils.ParseUint(userID, zap.L().Sugar())
+	userIDUint, err := utils.ParseUint(userID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -112,13 +112,13 @@ func (uc *userController) GetUserFollowersCount(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"followers_count": count})
-	zap.L().Info("user followers count fetched successfully", zap.String("user_id", userID))
+	uc.logger.Info("user followers count fetched successfully", zap.String("user_id", userID))
 }
 
 // GET /api/v1/user/following-count/:user_id
 func (uc *userController) GetUserFollowingCount(c *gin.Context) {
 	userID := c.Param("user_id")
-	userIDUint, err := utils.ParseUint(userID, zap.L().Sugar())
+	userIDUint, err := utils.ParseUint(userID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -129,25 +129,25 @@ func (uc *userController) GetUserFollowingCount(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"following_count": count})
-	zap.L().Info("user following count fetched successfully", zap.String("user_id", userID))
+	uc.logger.Info("user following count fetched successfully", zap.String("user_id", userID))
 }
 
 // GET /api/v1/user/following-posts/:user_id
 func (uc *userController) GetUserFollowingPosts(c *gin.Context) {
 	userID := c.Param("user_id")
-	userIDUint, err := utils.ParseUint(userID, zap.L().Sugar())
+	userIDUint, err := utils.ParseUint(userID, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	page := c.Query("page")
 	limit := c.Query("limit")
-	pageUint, err := utils.ParseUint(page, zap.L().Sugar())
+	pageUint, err := utils.ParseUint(page, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	limitUint, err := utils.ParseUint(limit, zap.L().Sugar())
+	limitUint, err := utils.ParseUint(limit, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -158,5 +158,5 @@ func (uc *userController) GetUserFollowingPosts(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": publicuserdto.ToPublicPosts(posts), "total": total})
-	zap.L().Info("user following posts fetched successfully", zap.String("user_id", userID))
+	uc.logger.Info("user following posts fetched successfully", zap.String("user_id", userID))
 }

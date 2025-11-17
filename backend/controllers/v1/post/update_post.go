@@ -13,7 +13,7 @@ import (
 func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 
 	postId := c.Param("id")
-	postIdUint, err := utils.ParseUint(postId, zap.L().Sugar())
+	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -41,7 +41,7 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 	content := c.PostForm("content")
 	imageFile, err := c.FormFile("image")
 	if err != nil {
-		zap.L().Error("failed to get image file", zap.Error(err))
+		pc.logger.Error("failed to get image file", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
 		return
 	}
@@ -60,5 +60,5 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"post": updatedPost})
-	zap.L().Info("post updated successfully", zap.Uint("post_id", uint(postIdUint)))
+	pc.logger.Info("post updated successfully", zap.Uint("post_id", uint(postIdUint)))
 }

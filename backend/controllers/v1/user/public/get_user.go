@@ -14,7 +14,7 @@ import (
 // GET /api/v1/user/:id
 func (uc *userController) GetUserByID(c *gin.Context) {
 	userId := c.Param("id")
-	userIdUint, err := utils.ParseUint(userId, zap.L().Sugar())
+	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -83,13 +83,13 @@ func (uc *userController) GetUserAll(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": publicuserdto.ToPublicUsers(users)})
-	zap.L().Info("all users fetched successfully", zap.Int("users_count", len(users)))
+	uc.logger.Info("all users fetched successfully", zap.Int("users_count", len(users)))
 }
 
 // GET /api/v1/user/id/:id/select?select=field1,field2,field3
 func (uc *userController) GetUserByIDWithSelect(c *gin.Context) {
 	userId := c.Param("id")
-	userIdUint, err := utils.ParseUint(userId, zap.L().Sugar())
+	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -16,6 +16,7 @@ type UserController interface {
 	GetUserAll(c *gin.Context)
 	GetUserByIDWithSelect(c *gin.Context)
 	UpdateUserByIDWithSelect(c *gin.Context)
+	DeleteUserByID(c *gin.Context)
 	FollowUser(c *gin.Context)
 	UnfollowUser(c *gin.Context)
 	GetUserFollowers(c *gin.Context)

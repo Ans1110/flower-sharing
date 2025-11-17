@@ -28,6 +28,7 @@ type UserService interface {
 	GetUserFollowersCount(userID uint) (int64, error)
 	GetUserFollowingCount(userID uint) (int64, error)
 	GetUserFollowingPosts(userID uint, page, limit int) ([]models.Post, int64, error)
+	CheckUserOwnership(id uint, userID uint) (bool, error)
 }
 
 type userService struct {
