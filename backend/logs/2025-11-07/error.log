@@ -1,8 +1,0 @@
-[flower-backend]2025-11-07 16:58:48	[31mERROR[0m	backend/main.go:64	panic recovered	{"error": "runtime error: invalid memory address or nil pointer dereference"}
-
-[flower-backend]2025-11-07 17:00:19	[31mERROR[0m	backend/main.go:64	panic recovered	{"error": "runtime error: invalid memory address or nil pointer dereference"}
-
-[flower-backend]2025-11-07 17:00:42	[31mERROR[0m	backend/main.go:64	panic recovered	{"error": "runtime error: invalid memory address or nil pointer dereference"}
-
-[flower-backend]2025-11-07 17:02:25	[31mERROR[0m	backend/main.go:64	panic recovered	{"error": "runtime error: invalid memory address or nil pointer dereference"}
-
