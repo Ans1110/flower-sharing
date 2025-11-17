@@ -3,7 +3,6 @@ package auth_controller
 import (
 	"flower-backend/database"
 	"flower-backend/libs"
-	"flower-backend/middlewares"
 	"flower-backend/models"
 	"net/http"
 
@@ -14,8 +13,8 @@ import (
 )
 
 type LoginInput struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required"`
 }
 
 // Login godoc
@@ -23,9 +22,10 @@ type LoginInput struct {
 //	@Summary		Login user
 //	@Description	Authenticate user with email and password, returns access and refresh tokens
 //	@Tags			auth
-//	@Accept			json
+//	@Accept			multipart/form-data
 //	@Produce		json
-//	@Param			body	body		LoginInput				true	"Login credentials"
+//	@Param			email		formData	string					true	"Email address"
+//	@Param			password	formData	string					true	"Password (min 8 characters, must include uppercase, lowercase, digit, and special character)"
 //	@Success		200		{object}	map[string]interface{}	"Login successful, returns tokens"
 //	@Failure		400		{object}	map[string]interface{}	"Bad request - invalid input"
 //	@Failure		401		{object}	map[string]interface{}	"Unauthorized - invalid credentials"
@@ -33,19 +33,18 @@ type LoginInput struct {
 //	@Securuty		BearerAuth
 //	@Router			/auth/login [post]
 func (ac *authController) Login(c *gin.Context) {
-	var body LoginInput
-	if err := c.ShouldBindJSON(&body); err != nil {
-		if middlewares.ExtractValidationErrors(c, err) {
-			return
-		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+
+	if email == "" || password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
 		return
 	}
 
-	user, err := ac.svc.GetUserByEmail(body.Email)
+	user, err := ac.svc.GetUserByEmail(email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			ac.logger.Error("user not found", zap.String("email", body.Email))
+			ac.logger.Error("user not found", zap.String("email", email))
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
@@ -55,7 +54,7 @@ func (ac *authController) Login(c *gin.Context) {
 	}
 
 	// compare password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
