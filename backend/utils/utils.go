@@ -1,10 +1,12 @@
 package utils
 
 import (
+	"flower-backend/docs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -144,4 +146,27 @@ func ParseInt(s string) int {
 		return 0
 	}
 	return num
+}
+
+/**
+ * Updates Swagger documentation host dynamically based on the API base URL.
+ *
+ * - Extracts the host from the API_BASE_URL environment variable.
+ * - Removes the protocol (http:// or https://) to get the host.
+ * - Updates the Swagger docs.SwaggerInfo.Host at runtime.
+ *
+ * Examples:
+ *   - http://localhost:8080 -> localhost:8080
+ *   - https://api.example.com -> api.example.com
+ */
+func UpdateSwaggerHost(apiBaseURL string) {
+	// Remove protocol from URL to get host
+	host := strings.TrimPrefix(apiBaseURL, "http://")
+	host = strings.TrimPrefix(host, "https://")
+
+	// Remove trailing slash if present
+	host = strings.TrimSuffix(host, "/")
+
+	// Update Swagger host
+	docs.SwaggerInfo.Host = host
 }

@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "{{APIBaseURL}}",
+    "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
         "/auth/login": {

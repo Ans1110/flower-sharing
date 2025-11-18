@@ -8,6 +8,7 @@ import (
 	"flower-backend/middlewares"
 	"flower-backend/models"
 	v1Routes "flower-backend/routes/v1"
+	"flower-backend/utils"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,8 +21,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
-
-	_ "flower-backend/docs" // Import generated docs
 )
 
 //	@title			Flower Sharing API
@@ -35,7 +34,7 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@host		{{APIBaseURL}}
+//	@host		localhost:8080
 //	@BasePath	/api/v1
 
 //	@securityDefinitions.apikey	BearerAuth
@@ -49,6 +48,9 @@ func main() {
 	defer logger.Sync()
 	// config
 	cfg := config.LoadConfig()
+
+	// Update Swagger host dynamically based on environment
+	utils.UpdateSwaggerHost(cfg.APIBaseURL)
 
 	logger.Info("starting server")
 	// db
