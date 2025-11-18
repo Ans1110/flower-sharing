@@ -14,18 +14,36 @@ import (
 
 func init() {
 	// Load .env file from the project root
-	// Try multiple possible locations
+	// Automatically switch between .env.production and .env.development based on GO_ENV
 	wd, _ := os.Getwd()
-	envPaths := []string{
-		".env",
-		filepath.Join(wd, ".env"),
-		filepath.Join(wd, "..", ".env"),
-		filepath.Join(wd, "backend", ".env"),
+
+	// Determine which .env file to load based on GO_ENV
+	goEnv := os.Getenv("GO_ENV")
+	var envFiles []string
+
+	switch goEnv {
+	case "development":
+		envFiles = []string{".env.development", ".env"}
+	case "production":
+		envFiles = []string{".env.production", ".env"}
+	default:
+		envFiles = []string{".env"}
 	}
 
-	for _, path := range envPaths {
-		if err := godotenv.Load(path); err == nil {
-			break
+	// Try multiple possible locations for each env file
+	for _, envFile := range envFiles {
+		envPaths := []string{
+			envFile,
+			filepath.Join(wd, envFile),
+			filepath.Join(wd, "..", envFile),
+			filepath.Join(wd, "backend", envFile),
+		}
+
+		for _, path := range envPaths {
+			if err := godotenv.Load(path); err == nil {
+				// Successfully loaded, exit
+				return
+			}
 		}
 	}
 }
