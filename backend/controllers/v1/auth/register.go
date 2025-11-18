@@ -89,7 +89,8 @@ func (ac *authController) Register(c *gin.Context) {
 
 	// set cookies
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
+	c.SetCookie("accessToken", accessToken, int(1*60*60), "/", "", ac.cfg.GO_ENV == "production", true)
+	c.SetCookie("refreshToken", refreshToken, int(7*24*60*60), "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User created successfully", "user": gin.H{
@@ -97,6 +98,5 @@ func (ac *authController) Register(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 		},
-		"accessToken": accessToken,
 	})
 }

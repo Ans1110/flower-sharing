@@ -73,18 +73,28 @@ func (s *userService) RegisterUser(username, email, password string, avatarFile 
 		avatarURL = uploadResult.SecureURL
 	}
 
+	// Determine user role based on whitelist
+	role := "user"
+	for _, adminEmail := range s.cfg.WhiteListAdminEmails {
+		if email == adminEmail {
+			role = "admin"
+			break
+		}
+	}
+
 	user := models.User{
 		Username: username,
 		Email:    email,
 		Password: password,
 		Avatar:   avatarURL,
+		Role:     role,
 	}
 
 	if err := s.repo.Create(&user); err != nil {
 		s.logger.Error("failed to create user", zap.Error(err))
 		return nil, err
 	}
-	s.logger.Info("user created successfully", zap.String("username", username))
+	s.logger.Info("user created successfully", zap.String("username", username), zap.String("role", role))
 	return &user, nil
 }
 
