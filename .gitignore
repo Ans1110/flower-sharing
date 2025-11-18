@@ -5,6 +5,7 @@ backend/flower-backend
 backend/tmp/
 backend/.env
 backend/.env.*
+backend/out
 
 # Frontend (if you have one)
 frontend/node_modules/
