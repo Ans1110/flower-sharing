@@ -12,7 +12,7 @@ import (
 
 func Authorize(roles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId, exists := c.Get("userId")
+		userId, exists := c.Get("user_id")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code":    "Unauthorized",

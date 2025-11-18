@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -96,15 +95,6 @@ func ValidatePassword(password string) bool {
 // formatUnixTime formats Unix timestamp as string
 func FormatUnixTime(timestamp int64) string {
 	return time.Unix(timestamp, 0).Format(time.RFC3339)
-}
-
-// formatOrigin
-func FormatOrigins() []string {
-	allowOriginsRaw := MustGetEnv("ALLOW_ORIGINS")
-	allowOriginsRaw = strings.Trim(allowOriginsRaw, "[]\"")
-	allowOrigins := strings.Split(allowOriginsRaw, ",")
-
-	return allowOrigins
 }
 
 func HashPassword(password string) (string, error) {

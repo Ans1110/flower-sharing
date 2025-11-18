@@ -30,7 +30,6 @@ import (
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	API Support
-//	@contact.url	http://www.flower-sharing.com/support
 //	@contact.email	peter0928091516@gmail.com
 
 //	@license.name	Apache 2.0

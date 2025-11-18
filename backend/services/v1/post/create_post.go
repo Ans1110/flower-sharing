@@ -12,7 +12,6 @@ import (
 
 // CreatePost
 func (s *postService) CreatePost(post models.Post) (*models.Post, error) {
-	// Sanitize inputs to prevent XSS
 	post.Title = utils.SanitizeString(post.Title)
 	post.Content = utils.SanitizeHTML(post.Content)
 

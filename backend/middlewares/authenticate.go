@@ -54,7 +54,7 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 
-	c.Set("userId", userId)
+	c.Set("user_id", userId)
 	zap.L().Info("User authenticated", zap.Uint("user_id", userId))
 	c.Next()
 }

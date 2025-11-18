@@ -12,7 +12,6 @@ const docTemplate = `{
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "http://www.flower-sharing.com/support",
             "email": "peter0928091516@gmail.com"
         },
         "license": {

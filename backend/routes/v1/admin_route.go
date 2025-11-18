@@ -16,6 +16,7 @@ func AdminRoutes(r *gin.RouterGroup) {
 	userCtrl := admin_user_controller.NewAdminUserController(database.DB, cfg, logger)
 
 	admin := r.Group("/admin")
+	admin.Use(middlewares.Authenticate)
 	admin.Use(middlewares.Authorize([]string{"admin"}))
 	{
 

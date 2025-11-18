@@ -5,6 +5,7 @@ import (
 	public_user_controller "flower-backend/controllers/v1/user/public"
 	"flower-backend/database"
 	"flower-backend/log"
+	"flower-backend/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,28 +16,30 @@ func UserRoutes(r *gin.RouterGroup) {
 	userCtrl := public_user_controller.NewUserController(database.DB, cfg, logger)
 
 	user := r.Group("/user")
-
 	{
-		// Get routes
+		// Public GET routes (no authentication required)
 		user.GET("/:id", userCtrl.GetUserByID)
 		user.GET("/email/:email", userCtrl.GetUserByEmail)
 		user.GET("/username/:username", userCtrl.GetUserByUsername)
 		user.GET("/all", userCtrl.GetUserAll)
 		user.GET("/id/:id/select", userCtrl.GetUserByIDWithSelect)
-		// Update routes
-		user.PUT("/id/:id/select", userCtrl.UpdateUserByIDWithSelect)
-		// Delete routes
-		user.DELETE("/:id", userCtrl.DeleteUserByID)
-	}
-
-	{
-		// Follow routes
-		user.POST("/follow/:follower_id/:following_id", userCtrl.FollowUser)
-		user.POST("/unfollow/:follower_id/:following_id", userCtrl.UnfollowUser)
 		user.GET("/followers/:user_id", userCtrl.GetUserFollowers)
 		user.GET("/following/:user_id", userCtrl.GetUserFollowing)
 		user.GET("/followers-count/:user_id", userCtrl.GetUserFollowersCount)
 		user.GET("/following-count/:user_id", userCtrl.GetUserFollowingCount)
 		user.GET("/following-posts/:user_id", userCtrl.GetUserFollowingPosts)
+	}
+
+	// Protected routes (authentication required)
+	userAuth := r.Group("/user")
+	userAuth.Use(middlewares.Authenticate)
+	{
+		// Update routes
+		userAuth.PUT("/id/:id/select", userCtrl.UpdateUserByIDWithSelect)
+		// Delete routes
+		userAuth.DELETE("/:id", userCtrl.DeleteUserByID)
+		// Follow routes
+		userAuth.POST("/follow/:follower_id/:following_id", userCtrl.FollowUser)
+		userAuth.POST("/unfollow/:follower_id/:following_id", userCtrl.UnfollowUser)
 	}
 }

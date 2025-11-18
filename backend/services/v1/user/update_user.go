@@ -14,7 +14,6 @@ import (
 
 // UpdateUserByIDWithSelect
 func (s *userService) UpdateUserByIDWithSelect(id uint, updates map[string]any, imageFile *multipart.FileHeader, selectFields []string) (*models.User, error) {
-	// Sanitize updates to prevent XSS
 	if username, ok := updates["username"].(string); ok {
 		updates["username"] = utils.SanitizeUsername(username)
 	}

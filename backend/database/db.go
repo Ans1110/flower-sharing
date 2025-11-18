@@ -2,6 +2,7 @@ package database
 
 import (
 	"flower-backend/config"
+	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -14,7 +15,7 @@ var DB *gorm.DB
 
 // ConnectDB connects to the database with connection pooling
 func ConnectDB(cfg *config.Config, logger *zap.Logger) {
-	dsn := cfg.DatabaseURL
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	// Configure GORM with custom logger settings
 	gormConfig := &gorm.Config{}

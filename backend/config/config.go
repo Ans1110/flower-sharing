@@ -8,8 +8,11 @@ import (
 
 type Config struct {
 	Port                 string
-	WhiteListedOrigins   []string
-	DatabaseURL          string
+	DBHost               string
+	DBPort               string
+	DBUser               string
+	DBPassword           string
+	DBName               string
 	GO_ENV               string
 	JWTSecret            string
 	JWTRefreshSecret     string
@@ -38,9 +41,11 @@ func LoadConfig() *Config {
 	port := utils.GetEnv("PORT", "8080")
 	goEnv := utils.GetEnv("GO_ENV", "development")
 
-	dbURL := utils.MustGetEnv("DB_URL")
-
-	whiteListedOrigins := strings.Split(utils.MustGetEnv("WHITE_LIST_ORIGINS"), ",")
+	dbHost := utils.GetEnv("DB_HOST", "localhost")
+	dbPort := utils.GetEnv("DB_PORT", "3306")
+	dbUser := utils.GetEnv("DB_USER", "root")
+	dbPassword := utils.GetEnv("DB_PASSWORD", "root")
+	dbName := utils.GetEnv("DB_NAME", "flower_sharing")
 
 	jwtSecret := utils.MustGetEnv("JWT_SECRET")
 	jwtRefreshSecret := utils.MustGetEnv("JWT_REFRESH_SECRET")
@@ -57,7 +62,7 @@ func LoadConfig() *Config {
 
 	whiteListAdminEmails := strings.Split(utils.MustGetEnv("WHITE_LIST_ADMIN_EMAILS"), ",")
 
-	allowOrigins := utils.FormatOrigins()
+	allowOrigins := strings.Split(utils.MustGetEnv("ALLOW_ORIGINS"), ",")
 
 	// Timeout configurations
 	requestTimeout := utils.ParseDuration(utils.GetEnv("REQUEST_TIMEOUT", "30s"))
@@ -73,8 +78,11 @@ func LoadConfig() *Config {
 
 	return &Config{
 		Port:                 port,
-		WhiteListedOrigins:   whiteListedOrigins,
-		DatabaseURL:          dbURL,
+		DBHost:               dbHost,
+		DBPort:               dbPort,
+		DBUser:               dbUser,
+		DBPassword:           dbPassword,
+		DBName:               dbName,
 		GO_ENV:               goEnv,
 		JWTSecret:            jwtSecret,
 		JWTRefreshSecret:     jwtRefreshSecret,

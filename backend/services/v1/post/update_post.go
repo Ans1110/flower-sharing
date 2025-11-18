@@ -14,7 +14,6 @@ import (
 
 // UpdatePostByIDWithSelect
 func (s *postService) UpdatePostByID(postId uint, userId uint, imageFile *multipart.FileHeader, updates map[string]any, selectFields []string) (*models.Post, error) {
-	// Sanitize updates to prevent XSS
 	if title, ok := updates["title"].(string); ok {
 		updates["title"] = utils.SanitizeString(title)
 	}

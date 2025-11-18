@@ -40,7 +40,6 @@ func (s *userService) UploadAvatar(buffer []byte, userID uint) (string, error) {
 
 // register user
 func (s *userService) RegisterUser(username, email, password string, avatarFile *multipart.FileHeader) (*models.User, error) {
-	// Sanitize inputs to prevent XSS
 	username = utils.SanitizeUsername(username)
 	email = utils.SanitizeEmail(email)
 
