@@ -2,8 +2,6 @@
 
 # Backend
 backend/flower-backend
-backend/*.exe
-backend/*.log
 backend/tmp/
 backend/.env
 backend/.env.*
