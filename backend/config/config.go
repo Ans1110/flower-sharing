@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Port                 string
+	APIBaseURL           string
 	DBHost               string
 	DBPort               string
 	DBUser               string
@@ -40,7 +41,7 @@ type Config struct {
 func LoadConfig() *Config {
 	port := utils.GetEnv("PORT", "8080")
 	goEnv := utils.GetEnv("GO_ENV", "development")
-
+	apiBaseURL := utils.GetEnv("API_BASE_URL", "http://localhost:8080")
 	dbHost := utils.GetEnv("DB_HOST", "localhost")
 	dbPort := utils.GetEnv("DB_PORT", "3306")
 	dbUser := utils.GetEnv("DB_USER", "root")
@@ -78,6 +79,7 @@ func LoadConfig() *Config {
 
 	return &Config{
 		Port:                 port,
+		APIBaseURL:           apiBaseURL,
 		DBHost:               dbHost,
 		DBPort:               dbPort,
 		DBUser:               dbUser,

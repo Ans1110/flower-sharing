@@ -35,7 +35,7 @@ import (
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@host		localhost:8080
+//	@host		{{APIBaseURL}}
 //	@BasePath	/api/v1
 
 //	@securityDefinitions.apikey	BearerAuth
@@ -126,7 +126,7 @@ func main() {
 
 	// Start server in a goroutine
 	go func() {
-		logger.Info("server running on port http://localhost:" + port)
+		logger.Info("server running on " + cfg.APIBaseURL)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("failed to start server", zap.Error(err))
 			if cfg.GO_ENV == "production" {
@@ -136,7 +136,7 @@ func main() {
 	}()
 
 	logger.Info("server started")
-	logger.Info("swagger documentation available at http://localhost:" + port + "/swagger/index.html")
+	logger.Info("swagger documentation available at " + cfg.APIBaseURL + "/swagger/index.html")
 
 	/**
 	 * Listens for termination signals (`SIGTERM` and `SIGINT`).

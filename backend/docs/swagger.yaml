@@ -1,5 +1,5 @@
 basePath: /api/v1
-host: localhost:8080
+host: '{{APIBaseURL}}'
 info:
   contact:
     email: peter0928091516@gmail.com
