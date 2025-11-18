@@ -8,7 +8,11 @@ import (
 
 type Config struct {
 	Port                 string
-	DBURL                string
+	DBHost               string
+	DBPort               string
+	DBUser               string
+	DBPassword           string
+	DBName               string
 	GO_ENV               string
 	JWTSecret            string
 	JWTRefreshSecret     string
@@ -37,7 +41,11 @@ func LoadConfig() *Config {
 	port := utils.GetEnv("PORT", "8080")
 	goEnv := utils.GetEnv("GO_ENV", "development")
 
-	dbURL := utils.GetEnv("DB_URL", "root:root@tcp(localhost:3306)/flower_sharing?charset=utf8mb4&parseTime=True&loc=Local")
+	dbHost := utils.GetEnv("DB_HOST", "localhost")
+	dbPort := utils.GetEnv("DB_PORT", "3306")
+	dbUser := utils.GetEnv("DB_USER", "root")
+	dbPassword := utils.GetEnv("DB_PASSWORD", "root")
+	dbName := utils.GetEnv("DB_NAME", "flower_sharing")
 
 	jwtSecret := utils.MustGetEnv("JWT_SECRET")
 	jwtRefreshSecret := utils.MustGetEnv("JWT_REFRESH_SECRET")
@@ -70,7 +78,11 @@ func LoadConfig() *Config {
 
 	return &Config{
 		Port:                 port,
-		DBURL:                dbURL,
+		DBHost:               dbHost,
+		DBPort:               dbPort,
+		DBUser:               dbUser,
+		DBPassword:           dbPassword,
+		DBName:               dbName,
 		GO_ENV:               goEnv,
 		JWTSecret:            jwtSecret,
 		JWTRefreshSecret:     jwtRefreshSecret,
