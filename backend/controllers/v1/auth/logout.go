@@ -43,6 +43,8 @@ func (ac *authController) Logout(c *gin.Context) {
 	}
 
 	c.SetCookie("refreshToken", "", -1, "/", "", ac.cfg.GO_ENV == "production", true)
+	c.SetCookie("accessToken", "", -1, "/", "", ac.cfg.GO_ENV == "production", true)
+	c.SetCookie("role", "", -1, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully", "userId": userId})
 
