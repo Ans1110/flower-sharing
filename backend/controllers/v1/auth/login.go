@@ -85,6 +85,7 @@ func (ac *authController) Login(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 			"role":     user.Role,
+			"avatar":   user.Avatar,
 		},
 	})
 

@@ -98,6 +98,8 @@ func (ac *authController) Register(c *gin.Context) {
 			"id":       user.ID,
 			"username": user.Username,
 			"email":    user.Email,
+			"role":     user.Role,
+			"avatar":   user.Avatar,
 		},
 	})
 }
