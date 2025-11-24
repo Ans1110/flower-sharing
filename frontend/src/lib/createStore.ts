@@ -35,7 +35,7 @@ export default function createStore<T extends object>(
       name: name ?? "zustand-store",
       storage: createJSONStorage(() => safeStorage),
       partialize: (state) => {
-        Object.fromEntries(
+        return Object.fromEntries(
           Object.entries(state).filter(
             ([key]) => !excludeFromPersist?.includes(key as keyof T)
           )
