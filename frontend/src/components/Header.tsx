@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { DropdownAvatar } from "./ui/dropdown-avatar";
 import { UserType } from "@/types/user";
+import { ThemeToggle } from "./ThemeToggle";
 
 type HeaderProps = {
   navItems: {
@@ -64,7 +65,8 @@ const Header = ({
           </nav>
 
           {/* Desktop avatar and logout button */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
+            <ThemeToggle />
             {isAuthenticated ? (
               <DropdownAvatar
                 username={user?.username}
@@ -75,6 +77,7 @@ const Header = ({
             ) : (
               <div className="flex items-center space-x-3">
                 <Button
+                  asChild
                   variant="outline"
                   className=" border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
                 >
@@ -90,6 +93,7 @@ const Header = ({
           {/* Mobile menu */}
           <div className="md:hidden">
             <Button
+              asChild
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -134,6 +138,7 @@ const Header = ({
                   </Button>
                 ) : (
                   <Button
+                    asChild
                     variant="outline"
                     className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
                   >

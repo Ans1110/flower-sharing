@@ -14,17 +14,16 @@ export function proxy(request: NextRequest) {
 
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
-  const token = request.cookies.get("accessToken")?.value;
   const userRole = request.cookies.get("role")?.value;
 
-  if (isProtectedRoute && !token) {
-    const url = new URL("/login", request.url);
+  if (isProtectedRoute && userRole !== "admin") {
+    const url = new URL("/error", request.url);
     url.searchParams.set("redirect", pathname);
     return NextResponse.redirect(url);
   }
 
   if (isAdminRoute && userRole !== "admin") {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/error", request.url));
   }
 
   return NextResponse.next();

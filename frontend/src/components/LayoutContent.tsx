@@ -1,18 +1,20 @@
 "use client";
 
-import { Flower, Home, User } from "lucide-react";
+import { BookOpenText, Flower, Home, User, Users } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import { redirect, usePathname } from "next/navigation";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export default function LayoutContent({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -33,7 +35,13 @@ export default function LayoutContent({
       : []),
   ];
 
-  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "admin";
+  if (isAdmin) {
+    navItems.push(
+      { path: "/admin/users", label: "Users", icon: Users },
+      { path: "/admin/posts", label: "Posts", icon: BookOpenText }
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-linear-to-br from-rose-50 via-pink-50 to-purple-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
@@ -47,6 +55,7 @@ export default function LayoutContent({
         isActive={isActive}
       />
       <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 }

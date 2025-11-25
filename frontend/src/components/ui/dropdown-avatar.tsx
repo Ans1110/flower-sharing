@@ -39,8 +39,8 @@ export default function DropdownAvatar({
       <DropdownMenuTrigger asChild>
         <button className="relative focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-full">
           <Avatar className="size-10 cursor-pointer hover:opacity-80 transition-opacity">
-            <AvatarImage src={avatar} alt={username} />
-            <AvatarFallback className="bg-gradient-to-br from-rose-500 to-pink-500 text-white font-semibold">
+            <AvatarImage src={avatar} alt={username} className="object-cover" />
+            <AvatarFallback className="bg-linear-to-br from-rose-500 to-pink-500 text-white font-semibold">
               {getInitials(username)}
             </AvatarFallback>
           </Avatar>

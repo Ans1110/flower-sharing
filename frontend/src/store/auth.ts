@@ -4,9 +4,8 @@ import createStore from "@/lib/createStore";
 type AuthStateType = {
   user: UserType | null;
   isAuthenticated: boolean;
-  accessToken: string | null;
-  setAccessToken: (accessToken: string) => void;
-  setUser: (user: UserType) => void;
+  login: (user: UserType, accessToken: string) => void;
+  register: (user: UserType, accessToken: string) => void;
   logout: () => void;
 };
 
@@ -14,34 +13,39 @@ const useAuthStore = createStore<AuthStateType>(
   (set) => ({
     user: null,
     isAuthenticated: false,
-    accessToken: null,
-    setAccessToken: (accessToken: string) =>
+    login: (user: UserType, accessToken: string) =>
       set((state) => {
-        if (accessToken) {
+        // Store token in localStorage
+        if (globalThis.window !== undefined) {
           localStorage.setItem("accessToken", accessToken);
-          state.accessToken = accessToken;
-          state.isAuthenticated = true;
-        } else {
-          localStorage.removeItem("accessToken");
-          state.accessToken = null;
-          state.isAuthenticated = false;
         }
-      }),
-    setUser: (user: UserType) =>
-      set((state) => {
         state.user = user;
+        state.isAuthenticated = true;
+      }),
+    register: (user: UserType, accessToken: string) =>
+      set((state) => {
+        // Store token in localStorage
+        if (globalThis.window !== undefined) {
+          localStorage.setItem("accessToken", accessToken);
+        }
+        state.user = user;
+        state.isAuthenticated = true;
       }),
     logout: () =>
       set((state) => {
-        localStorage.removeItem("accessToken");
-        state.accessToken = null;
-        state.isAuthenticated = false;
+        if (globalThis.window !== undefined) {
+          localStorage.removeItem("accessToken");
+        }
         state.user = null;
+        state.isAuthenticated = false;
       }),
   }),
   {
     name: "auth-store",
-    excludeFromPersist: ["accessToken"],
+    storage:
+      globalThis.window === undefined
+        ? undefined
+        : globalThis.window.localStorage,
   }
 );
 
