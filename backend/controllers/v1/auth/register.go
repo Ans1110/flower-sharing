@@ -31,15 +31,17 @@ func (ac *authController) Register(c *gin.Context) {
 	username := c.PostForm("username")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
-	avatar, err := c.FormFile("avatar")
-	if err != nil {
-		ac.logger.Error("failed to get avatar file", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get avatar file"})
-		return
-	}
 
 	if username == "" || email == "" || password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username, email and password are required"})
+		return
+	}
+
+	// Avatar is optional
+	avatar, err := c.FormFile("avatar")
+	if err != nil && err != http.ErrMissingFile {
+		ac.logger.Error("failed to get avatar file", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get avatar file"})
 		return
 	}
 
@@ -89,12 +91,13 @@ func (ac *authController) Register(c *gin.Context) {
 
 	// set cookies
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("accessToken", accessToken, int(1*60*60), "/", "", ac.cfg.GO_ENV == "production", true)
 	c.SetCookie("refreshToken", refreshToken, int(7*24*60*60), "/", "", ac.cfg.GO_ENV == "production", true)
 	c.SetCookie("role", user.Role, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "User created successfully", "user": gin.H{
+		"message":     "User created successfully",
+		"accessToken": accessToken,
+		"user": gin.H{
 			"id":       user.ID,
 			"username": user.Username,
 			"email":    user.Email,

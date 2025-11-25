@@ -5,7 +5,6 @@ import (
 	"flower-backend/libs"
 	"flower-backend/models"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -13,15 +12,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+
 // Login godoc
 //
 //	@Summary		Login user
 //	@Description	Authenticate user with email and password, returns access and refresh tokens
 //	@Tags			auth
-//	@Accept			multipart/form-data
+//	@Accept			json
 //	@Produce		json
-//	@Param			email		formData	string					true	"Email address"
-//	@Param			password	formData	string					true	"Password (min 8 characters, must include uppercase, lowercase, digit, and special character)"
+//	@Param			credentials	body		LoginRequest			true	"Login credentials"
 //	@Success		200			{object}	map[string]interface{}	"Login successful, returns tokens"
 //	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
 //	@Failure		401			{object}	map[string]interface{}	"Unauthorized - invalid credentials"
@@ -29,13 +32,14 @@ import (
 //	@Security		BearerAuth
 //	@Router			/auth/login [post]
 func (ac *authController) Login(c *gin.Context) {
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-
-	if email == "" || password == "" {
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
 		return
 	}
+
+	email := req.Email
+	password := req.Password
 
 	user, err := ac.svc.GetUserByEmail(email)
 	if err != nil {
@@ -75,11 +79,11 @@ func (ac *authController) Login(c *gin.Context) {
 	// set cookies
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
-	c.SetCookie("accessToken", accessToken, int(1*time.Hour.Seconds()), "/", "", ac.cfg.GO_ENV == "production", true)
 	c.SetCookie("role", user.Role, 7*24*60*60, "/", "", ac.cfg.GO_ENV == "production", true)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
+		"message":     "Login successful",
+		"accessToken": accessToken,
 		"user": gin.H{
 			"id":       user.ID,
 			"username": user.Username,
