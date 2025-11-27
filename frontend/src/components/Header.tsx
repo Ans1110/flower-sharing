@@ -1,6 +1,6 @@
 "use client";
 
-import { Flower, LogIn, LogOut, LucideIcon, Menu, X } from "lucide-react";
+import { Flower, LogIn, LucideIcon, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { DropdownAvatar } from "./ui/dropdown-avatar";
@@ -31,7 +31,7 @@ const Header = ({
   isActive,
 }: HeaderProps) => {
   return (
-    <header className="sticky top-0 z-50 border-b backdrop-blur-sm bg-white/80 dark:bg-black/80 border-rose-100 dark:border-rose-900 shadow-lg ">
+    <header className="sticky top-0 z-50 border-b backdrop-blur-sm bg-white/80 dark:bg-black/80 border-rose-100 dark:border-rose-900 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -54,7 +54,7 @@ const Header = ({
                 key={path}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(path)
-                    ? "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300 shadow-sm"
+                    ? "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-200 shadow-sm"
                     : "text-gray-600 dark:text-gray-400 hover:bg-rose-50 dark:hover:bg-rose-800/50 hover:text-rose-600 dark:hover:text-rose-400"
                 }`}
               >
@@ -90,10 +90,20 @@ const Header = ({
             )}
           </div>
 
-          {/* Mobile menu */}
-          <div className="md:hidden">
+          {/* Mobile Avatar and Menu Button */}
+          <div className="md:hidden flex items-center space-x-3">
+            {/* Mobile Avatar - show only when authenticated */}
+            {isAuthenticated && (
+              <DropdownAvatar
+                username={user?.username}
+                email={user?.email}
+                avatar={user?.avatar}
+                onSignOut={handleLogout}
+              />
+            )}
+
+            {/* Mobile menu button */}
             <Button
-              asChild
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -106,57 +116,58 @@ const Header = ({
             </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-rose-100 dark:border-rose-900 py-4">
-            <nav className="flex flex-col space-y-4">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <Link
-                  href={path}
-                  key={path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive(path)
-                      ? "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300 shadow-sm"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-rose-50 dark:hover:bg-rose-800/50 hover:text-rose-600 dark:hover:text-rose-400"
-                  }`}
-                >
-                  <Icon className="size-5" />
-                  <span>{label}</span>
-                </Link>
-              ))}
-              <div className="pt-4 border-t border-rose-100 dark:border-rose-900">
-                {isAuthenticated ? (
-                  <Button
-                    variant="outline"
-                    onClick={handleLogout}
-                    className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
-                  >
-                    <LogOut className="size-5" />
-                    <span className="sr-only">Sign out</span>
-                  </Button>
-                ) : (
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
-                  >
-                    <Link
-                      href="/auth/login"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center space-x-2 w-full justify-center"
-                    >
-                      <LogIn className="size-5" />
-                      <span className="sr-only">Login</span>
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            </nav>
-          </div>
-        )}
       </div>
+
+      {/* Mobile Navigation - Absolute positioned overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-white dark:bg-black border-b border-rose-100 dark:border-rose-900 shadow-lg z-50">
+          <nav className="flex flex-col space-y-4 py-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {navItems.map(({ path, label, icon: Icon }) => (
+              <Link
+                href={path}
+                key={path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActive(path)
+                    ? "bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300 shadow-sm"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-rose-50 dark:hover:bg-rose-800/50 hover:text-rose-600 dark:hover:text-rose-400"
+                }`}
+              >
+                <Icon className="size-5" />
+                <span>{label}</span>
+              </Link>
+            ))}
+
+            {/* Mobile Theme Toggle and Login */}
+            <div className="pt-4 border-t border-rose-100 dark:border-rose-900 px-4 space-y-4">
+              {/* Appearance Row */}
+              <div className="flex items-center justify-between py-2">
+                <span className="text-base font-medium text-gray-700 dark:text-gray-300">
+                  Appearance
+                </span>
+                <ThemeToggle />
+              </div>
+
+              {!isAuthenticated && (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
+                >
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center space-x-2"
+                  >
+                    <LogIn className="size-5" />
+                    <span>Login</span>
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

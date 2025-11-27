@@ -1,12 +1,15 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import AlertDialogProvider from "./ui/alert-dialog-prodiver";
 
+import "@/service/refreshToken";
+
 type ProvidersProps = {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 };
 
 export default function Providers({ children }: ProvidersProps) {

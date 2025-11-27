@@ -117,4 +117,54 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom Toast Styles */
+  .toast-success {
+    @apply !bg-rose-700 !text-white !border-rose-800 backdrop-blur-sm;
+  }
+
+  .toast-success [data-icon] {
+    @apply !text-white;
+  }
+
+  .toast-error {
+    @apply !bg-red-700 !text-white !border-red-800 backdrop-blur-sm;
+  }
+
+  .toast-error [data-icon] {
+    @apply !text-white;
+  }
+
+  .toast-warning {
+    @apply !bg-amber-700 !text-white !border-amber-800 backdrop-blur-sm;
+  }
+
+  .toast-warning [data-icon] {
+    @apply !text-white;
+  }
+
+  .toast-info {
+    @apply !bg-blue-700 !text-white !border-blue-800 backdrop-blur-sm;
+  }
+
+  .toast-info [data-icon] {
+    @apply !text-white;
+  }
+
+  /* Dark mode adjustments */
+  .dark .toast-success {
+    @apply !bg-rose-800 !border-rose-900 backdrop-blur-sm;
+  }
+
+  .dark .toast-error {
+    @apply !bg-red-800 !border-red-900 backdrop-blur-sm;
+  }
+
+  .dark .toast-warning {
+    @apply !bg-amber-800 !border-amber-900 backdrop-blur-sm;
+  }
+
+  .dark .toast-info {
+    @apply !bg-blue-800 !border-blue-900 backdrop-blur-sm;
+  }
 }

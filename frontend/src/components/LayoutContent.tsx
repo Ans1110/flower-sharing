@@ -2,7 +2,7 @@
 
 import { BookOpenText, Flower, Home, User, Users } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { redirect, usePathname } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -16,9 +16,26 @@ export default function LayoutContent({
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const validateAuth = useAuthStore((state) => state.validateAuth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
+
+  // Validate auth state on mount and when localStorage changes
+  useEffect(() => {
+    validateAuth();
+
+    // Listen for storage changes (e.g., when token is deleted in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "accessToken" && e.newValue === null) {
+        validateAuth();
+      }
+    };
+
+    globalThis.window.addEventListener("storage", handleStorageChange);
+    return () =>
+      globalThis.window.removeEventListener("storage", handleStorageChange);
+  }, [validateAuth]);
 
   const handleLogout = () => {
     logout();
