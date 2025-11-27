@@ -71,6 +71,14 @@ func (s *userService) RegisterUser(username, email, password string, avatarFile 
 			return nil, err
 		}
 		avatarURL = uploadResult.SecureURL
+	} else {
+		// Generate default avatar URL based on first character of username
+		firstChar := "A"
+		if len(username) > 0 {
+			firstChar = string([]rune(username)[0])
+		}
+		// Using UI Avatars service for default avatars
+		avatarURL = fmt.Sprintf("https://ui-avatars.com/api/?name=%s&background=random&size=200", firstChar)
 	}
 
 	// Determine user role based on whitelist

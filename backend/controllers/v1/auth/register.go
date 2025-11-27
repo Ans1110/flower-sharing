@@ -10,17 +10,20 @@ import (
 	"go.uber.org/zap"
 )
 
+type RegisterRequest struct {
+	Username string `json:"username" binding:"required,min=2,max=15"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+
 // Register godoc
 //
 //	@Summary		Register a new user
-//	@Description	Create a new user account with username, email, password, and optional avatar
+//	@Description	Create a new user account with username, email, and password
 //	@Tags			auth
-//	@Accept			multipart/form-data
+//	@Accept			json
 //	@Produce		json
-//	@Param			username	formData	string					true	"Username (2-15 characters)"
-//	@Param			email		formData	string					true	"Email address"
-//	@Param			password	formData	string					true	"Password (min 8 characters, must include uppercase, lowercase, digit, and special character)"
-//	@Param			avatar		formData	file					false	"Avatar image file"
+//	@Param			credentials	body		RegisterRequest			true	"Registration credentials"
 //	@Success		200			{object}	map[string]interface{}	"User registered successfully"
 //	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
 //	@Failure		409			{object}	map[string]interface{}	"Conflict - user already exists"
@@ -28,22 +31,15 @@ import (
 //	@Security		BearerAuth
 //	@Router			/auth/register [post]
 func (ac *authController) Register(c *gin.Context) {
-	username := c.PostForm("username")
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-
-	if username == "" || email == "" || password == "" {
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username, email and password are required"})
 		return
 	}
 
-	// Avatar is optional
-	avatar, err := c.FormFile("avatar")
-	if err != nil && err != http.ErrMissingFile {
-		ac.logger.Error("failed to get avatar file", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get avatar file"})
-		return
-	}
+	username := req.Username
+	email := req.Email
+	password := req.Password
 
 	if !utils.ValidateUsername(username) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
@@ -67,7 +63,7 @@ func (ac *authController) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := ac.svc.RegisterUser(username, email, hashedPassword, avatar)
+	user, err := ac.svc.RegisterUser(username, email, hashedPassword, nil)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
