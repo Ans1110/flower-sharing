@@ -61,6 +61,11 @@ func (uc *userController) FollowUser(c *gin.Context) {
 //	@Param			following_id	path		int	true	"User to unfollow ID"
 //	@Success		200				{object}	map[string]interface{}
 //	@Failure		400				{object}	map[string]interface{}
+//	@Failure		404				{object}	map[string]interface{}
+//	@Failure		500				{object}	map[string]interface{}
+//	@Securuty		BearerAuth
+//	@Security		BearerAuth
+//	@Router			/user/unfollow/{follower_id}/{following_id} [post]
 func (uc *userController) UnfollowUser(c *gin.Context) {
 	followerID := c.Param("follower_id")
 	followingID := c.Param("following_id")

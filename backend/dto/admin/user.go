@@ -18,7 +18,6 @@ type UserAdminDTO struct {
 	Followers int       `json:"followers"`
 	Following int       `json:"following"`
 	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func ToUserAdminDTO(user *models.User) UserAdminDTO {
@@ -36,6 +35,7 @@ func ToUserAdminDTO(user *models.User) UserAdminDTO {
 		Likes:     len(user.Likes),
 		Followers: len(user.Followers),
 		Following: len(user.Following),
+		CreatedAt: user.CreatedAt,
 	}
 }
 

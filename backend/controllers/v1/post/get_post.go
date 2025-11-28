@@ -168,6 +168,6 @@ func (pc *postController) GetPostWithPagination(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts with pagination"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts, "total": total})
+	c.JSON(http.StatusOK, gin.H{"posts": posts, "totalPages": total, "page": pageInt})
 	pc.logger.Info("posts fetched successfully with pagination", zap.Int("page", pageInt), zap.Int("limit", limitInt))
 }

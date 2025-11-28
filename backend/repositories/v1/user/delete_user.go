@@ -27,6 +27,11 @@ func (r *userRepository) DeleteByID(id uint) error {
 		}
 	}
 
+	if err := r.db.Where("user_id = ?", id).Delete(&models.Token{}).Error; err != nil {
+		r.logger.Error("failed to delete user tokens", zap.Error(err))
+		return err
+	}
+
 	if err := r.db.Delete(&user).Error; err != nil {
 		r.logger.Error("failed to delete user by id", zap.Error(err))
 		return err
