@@ -177,7 +177,7 @@ export default function Register() {
                         href="/login"
                         className="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 font-medium transition-colors duration-200"
                       >
-                        &nbsp;Sign in here
+                        &nbsp;Sign in
                       </Link>
                     </p>
                   </div>

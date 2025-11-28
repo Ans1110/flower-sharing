@@ -6,4 +6,35 @@ type UserType = {
   avatar: string;
 };
 
-export type { UserType };
+type UserPublicResponseType = {
+  id: number;
+  username: string;
+  avatar: string;
+};
+
+type UserAdminResponseType = {
+  id: number;
+  username: string;
+  email: string;
+  role: "user" | "admin";
+  avatar: string;
+  posts: number;
+  likes: number;
+  followers: number;
+  following: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type UserPayloadType = {
+  username: string;
+  email: string;
+  avatar: string;
+};
+
+export type {
+  UserType,
+  UserPublicResponseType,
+  UserAdminResponseType,
+  UserPayloadType,
+};

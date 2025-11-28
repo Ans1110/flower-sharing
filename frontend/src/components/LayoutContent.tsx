@@ -48,7 +48,7 @@ export default function LayoutContent({
     { path: "/", label: "Home", icon: Home },
     { path: "/flowers", label: "Flowers", icon: Flower },
     ...(isAuthenticated
-      ? [{ path: "/profile", label: "Profile", icon: User }]
+      ? [{ path: `/profile/${user?.id}`, label: "Profile", icon: User }]
       : []),
   ];
 
