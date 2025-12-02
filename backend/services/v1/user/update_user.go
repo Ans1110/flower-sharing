@@ -33,10 +33,13 @@ func (s *userService) UpdateUserByIDWithSelect(id uint, updates map[string]any, 
 			s.logger.Error("failed to create cloudinary client", zap.Error(err))
 			return nil, err
 		}
+
 		oldPublicId := libs.ExtractPublicId(user.Avatar)
-		if err := libs.DeleteFromCloudinary(cld, oldPublicId); err != nil {
-			s.logger.Error("failed to delete old image from cloudinary", zap.Error(err))
-			return nil, err
+		if oldPublicId != "" {
+			if err := libs.DeleteFromCloudinary(cld, oldPublicId); err != nil {
+				s.logger.Error("failed to delete old image from cloudinary", zap.Error(err))
+				return nil, err
+			}
 		}
 
 		src, err := imageFile.Open()
@@ -61,11 +64,9 @@ func (s *userService) UpdateUserByIDWithSelect(id uint, updates map[string]any, 
 		user.Avatar = uploadResult.SecureURL
 
 		if err := s.repo.Update(user); err != nil {
-			s.logger.Error("failed to update user", zap.Error(err))
+			s.logger.Error("failed to update user avatar", zap.Error(err))
 			return nil, err
 		}
-		s.logger.Info("user updated successfully", zap.Uint("id", id))
-		return user, nil
 	}
 	s.logger.Info("user updated successfully", zap.Uint("id", id))
 	return user, nil

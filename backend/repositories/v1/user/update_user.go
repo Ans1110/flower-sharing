@@ -37,11 +37,18 @@ func (r *userRepository) UpdateByIDWithSelect(id uint, updates map[string]any, s
 		return &user, nil
 	}
 
+	// Apply the filtered updates
+	if err := r.db.Model(&user).Updates(filtered).Error; err != nil {
+		r.logger.Error("failed to update user", zap.Error(err))
+		return nil, err
+	}
+
+	// Reload the user to get updated data
 	if err := r.db.First(&user, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, gorm.ErrRecordNotFound
 		}
-		r.logger.Error("failed to find user", zap.Error(err))
+		r.logger.Error("failed to reload user", zap.Error(err))
 		return nil, err
 	}
 

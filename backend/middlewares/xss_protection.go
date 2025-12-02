@@ -106,6 +106,15 @@ func hasXSSInArray(arr []any) bool {
 // ValidateFormInput validates and sanitizes form input fields
 func ValidateFormInput() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		contentType := c.GetHeader("Content-Type")
+
+		// Skip validation for multipart/form-data as it contains file uploads
+		// and ParseForm() can interfere with multipart parsing
+		if len(contentType) >= 19 && contentType[:19] == "multipart/form-data" {
+			c.Next()
+			return
+		}
+
 		// Check all form values for XSS patterns
 		if err := c.Request.ParseForm(); err == nil {
 			for key, values := range c.Request.Form {

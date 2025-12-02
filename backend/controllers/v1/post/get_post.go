@@ -1,7 +1,9 @@
 package post_controller
 
 import (
+	public_dto "flower-backend/dto/public"
 	"flower-backend/utils"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -40,7 +42,8 @@ func (pc *postController) GetPostByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get post"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"post": post})
+	postDTO := public_dto.ToPublicPost(post)
+	c.JSON(http.StatusOK, gin.H{"post": postDTO})
 	pc.logger.Info("post fetched successfully", zap.String("post_id", postId))
 }
 
@@ -75,7 +78,8 @@ func (pc *postController) GetPostAllByUserID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	postsDTO := public_dto.ToPublicPosts(posts)
+	c.JSON(http.StatusOK, gin.H{"posts": postsDTO})
 	pc.logger.Info("posts fetched successfully", zap.String("user_id", userId))
 }
 
@@ -102,7 +106,8 @@ func (pc *postController) GetPostAll(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	postsDTO := public_dto.ToPublicPosts(posts)
+	c.JSON(http.StatusOK, gin.H{"posts": postsDTO})
 	pc.logger.Info("posts fetched successfully")
 }
 
@@ -129,7 +134,8 @@ func (pc *postController) SearchPosts(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search posts"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	postsDTO := public_dto.ToPublicPosts(posts)
+	c.JSON(http.StatusOK, gin.H{"posts": postsDTO})
 	pc.logger.Info("posts searched successfully", zap.String("query", query))
 }
 
@@ -168,6 +174,9 @@ func (pc *postController) GetPostWithPagination(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get posts with pagination"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts, "totalPages": total, "page": pageInt})
+	postsDTO := public_dto.ToPublicPosts(posts)
+	// Calculate totalPages from total count and limit (ceiling division)
+	totalPages := int(math.Ceil(float64(total) / float64(limitInt)))
+	c.JSON(http.StatusOK, gin.H{"posts": postsDTO, "totalPages": totalPages, "page": pageInt})
 	pc.logger.Info("posts fetched successfully with pagination", zap.Int("page", pageInt), zap.Int("limit", limitInt))
 }

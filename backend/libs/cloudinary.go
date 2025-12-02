@@ -70,6 +70,7 @@ func UploadToCloudinary(cld *cloudinary.Cloudinary, buffer []byte, publicId stri
 }
 
 func DeleteFromCloudinary(cld *cloudinary.Cloudinary, publicId string) error {
+	logger := zap.L()
 	ctx := context.Background()
 	_, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
 		PublicID: publicId,

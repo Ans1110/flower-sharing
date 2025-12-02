@@ -27,6 +27,13 @@ func (r *postRepository) DeleteByID(postID, userID uint) error {
 		}
 	}
 
+	// Delete all likes associated with this post first
+	if err := r.db.Exec("DELETE FROM post_likes WHERE post_id = ?", postID).Error; err != nil {
+		r.logger.Error("failed to delete post likes", zap.Error(err))
+		return err
+	}
+
+	// Now delete the post
 	if err := r.db.Delete(&post).Error; err != nil {
 		r.logger.Error("failed to delete post", zap.Error(err))
 		return err

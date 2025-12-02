@@ -1,6 +1,7 @@
 package post_controller
 
 import (
+	public_dto "flower-backend/dto/public"
 	"flower-backend/utils"
 	"net/http"
 
@@ -29,7 +30,29 @@ func (pc *postController) LikePost(c *gin.Context) {
 		return
 	}
 	userId := c.GetUint("user_id")
+	if userId == 0 {
+		pc.logger.Error("user_id not found in context")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	if err := pc.svc.LikePost(uint(postIdUint), userId); err != nil {
+		// Handle specific error cases
+		if err.Error() == "post already liked" {
+			// This is expected validation, log as info instead of error
+			pc.logger.Info("post already liked",
+				zap.Uint("post_id", uint(postIdUint)),
+				zap.Uint("user_id", userId))
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Log actual errors
+		pc.logger.Error("failed to like post",
+			zap.Uint("post_id", uint(postIdUint)),
+			zap.Uint("user_id", userId),
+			zap.Error(err))
+
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like post"})
 		return
 	}
@@ -130,6 +153,7 @@ func (pc *postController) GetUserLikedPosts(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user liked posts"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"posts": posts, "total": total})
+	postsDTO := public_dto.ToPublicPosts(posts)
+	c.JSON(http.StatusOK, gin.H{"posts": postsDTO, "total": total})
 	pc.logger.Info("user liked posts fetched successfully", zap.Uint("user_id", uint(userIdUint)))
 }

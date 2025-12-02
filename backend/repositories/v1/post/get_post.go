@@ -9,7 +9,7 @@ import (
 
 func (r *postRepository) GetByID(id uint) (*models.Post, error) {
 	var post models.Post
-	if err := r.db.Where("id = ?", id).First(&post).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Likes").Where("id = ?", id).First(&post).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, gorm.ErrRecordNotFound
 		}
@@ -21,7 +21,7 @@ func (r *postRepository) GetByID(id uint) (*models.Post, error) {
 
 func (r *postRepository) GetAllByUserID(userID uint) ([]models.Post, error) {
 	var posts []models.Post
-	if err := r.db.Where("user_id = ?", userID).Find(&posts).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Likes").Where("user_id = ?", userID).Find(&posts).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, gorm.ErrRecordNotFound
 		}
@@ -33,7 +33,7 @@ func (r *postRepository) GetAllByUserID(userID uint) ([]models.Post, error) {
 
 func (r *postRepository) GetAll() ([]models.Post, error) {
 	var posts []models.Post
-	if err := r.db.Find(&posts).Error; err != nil {
+	if err := r.db.Preload("User").Preload("Likes").Find(&posts).Error; err != nil {
 		r.logger.Error("failed to get all posts", zap.Error(err))
 		return nil, err
 	}
@@ -42,7 +42,8 @@ func (r *postRepository) GetAll() ([]models.Post, error) {
 
 func (r *postRepository) Search(query string) ([]models.Post, error) {
 	var posts []models.Post
-	if err := r.db.Where("title LIKE ? OR content LIKE ?", "%"+query+"%", "%"+query+"%").
+	if err := r.db.Preload("User").Preload("Likes").
+		Where("title LIKE ? OR content LIKE ?", "%"+query+"%", "%"+query+"%").
 		Order("created_at DESC").
 		Find(&posts).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -67,12 +68,12 @@ func (r *postRepository) GetWithPagination(page, limit int) ([]models.Post, int6
 
 	offset := (page - 1) * limit
 
-	if err := r.db.Table("posts").Count(&total).Error; err != nil {
+	if err := r.db.Model(&models.Post{}).Count(&total).Error; err != nil {
 		r.logger.Error("failed to get total posts", zap.Error(err))
 		return nil, 0, err
 	}
 
-	err := r.db.Table("posts").
+	err := r.db.Preload("User").Preload("Likes").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).

@@ -17,6 +17,9 @@ func (s *postService) LikePost(postID, userID uint) error {
 	}
 
 	if exists {
+		s.logger.Info("post already liked",
+			zap.Uint("post_id", postID),
+			zap.Uint("user_id", userID))
 		return errors.New("post already liked")
 	}
 

@@ -8,35 +8,73 @@ import (
 )
 
 func (r *postRepository) Like(postID, userID uint) error {
-	var post models.Post
-	if err := r.db.First(&post, postID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return gorm.ErrRecordNotFound
-		}
-		r.logger.Error("failed to find post", zap.Error(err))
+	// Check if post exists
+	var postCount int64
+	if err := r.db.Model(&models.Post{}).Where("id = ?", postID).Count(&postCount).Error; err != nil {
+		r.logger.Error("failed to check if post exists", zap.Error(err))
 		return err
+	}
+	if postCount == 0 {
+		return gorm.ErrRecordNotFound
 	}
 
-	if err := r.db.Model(&post).Association("Likes").Append(&models.User{ID: userID}); err != nil {
-		r.logger.Error("failed to like post", zap.Error(err))
+	// Check if user exists
+	var userCount int64
+	if err := r.db.Model(&models.User{}).Where("id = ?", userID).Count(&userCount).Error; err != nil {
+		r.logger.Error("failed to check if user exists", zap.Error(err))
 		return err
 	}
+	if userCount == 0 {
+		r.logger.Error("user not found", zap.Uint("user_id", userID))
+		return gorm.ErrRecordNotFound
+	}
+
+	// Insert directly into the join table using raw SQL
+	// This is more efficient than loading full objects
+	// Using INSERT IGNORE for MySQL to handle potential race conditions
+	result := r.db.Exec(
+		"INSERT IGNORE INTO post_likes (post_id, user_id) VALUES (?, ?)",
+		postID, userID,
+	)
+	if result.Error != nil {
+		r.logger.Error("failed to like post",
+			zap.Uint("post_id", postID),
+			zap.Uint("user_id", userID),
+			zap.Error(result.Error))
+		return result.Error
+	}
+
+	// INSERT IGNORE returns 0 rows affected if duplicate exists (race condition)
+	// This is fine - the service layer already checks for duplicates before calling this
+	// If we get here and RowsAffected is 0, it means another request inserted it first
+	// which is acceptable behavior (idempotent operation)
 	return nil
 }
 
 func (r *postRepository) Unlike(postID, userID uint) error {
-	var post models.Post
-	if err := r.db.First(&post, postID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return gorm.ErrRecordNotFound
-		}
-		r.logger.Error("failed to find post", zap.Error(err))
-		return err
+	// Delete directly from the join table using raw SQL
+	// This is more efficient than loading full objects
+	result := r.db.Exec(
+		"DELETE FROM post_likes WHERE post_id = ? AND user_id = ?",
+		postID, userID,
+	)
+	if result.Error != nil {
+		r.logger.Error("failed to unlike post", zap.Error(result.Error))
+		return result.Error
 	}
 
-	if err := r.db.Model(&post).Association("Likes").Delete(&models.User{ID: userID}); err != nil {
-		r.logger.Error("failed to unlike post", zap.Error(err))
-		return err
+	// Check if any rows were affected (post or like might not exist)
+	if result.RowsAffected == 0 {
+		// Check if post exists
+		var postCount int64
+		if err := r.db.Model(&models.Post{}).Where("id = ?", postID).Count(&postCount).Error; err != nil {
+			r.logger.Error("failed to check if post exists", zap.Error(err))
+			return err
+		}
+		if postCount == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		// Post exists but like doesn't - this is fine, just return success
 	}
 	return nil
 }
