@@ -29,7 +29,7 @@ import Image from "next/image";
 
 const flowerSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  content: z.string().min(1, "Content is required"),
+  content: z.string().min(10, "Content must be at least 10 characters"),
   image: z.string().min(1, "Image is required"),
 });
 
@@ -188,6 +188,7 @@ export default function NewFlower() {
                       <Image
                         src={imagePreview}
                         alt="Preview"
+                        sizes="(max-width: 768px) 100vw, 500px"
                         fill
                         className="object-cover"
                       />

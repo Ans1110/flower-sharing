@@ -19,6 +19,7 @@ frontend/.env.*
 .vscode/
 .idea/
 *.iml
+.cursorrules
 
 # OS files
 .DS_Store

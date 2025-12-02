@@ -14,7 +14,7 @@ type FlowerType = {
 type FlowerPayloadType = {
   title: string;
   content: string;
-  imageUrl: string;
+  imageUrl: string | null | File;
   authorId: string;
 };
 

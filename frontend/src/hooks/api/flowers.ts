@@ -83,11 +83,11 @@ const useUpdatePost = () => {
   return useMutation<
     { post: FlowerType },
     AxiosError<{ error: string }>,
-    { id: string; formData: FormData; selectFields: string[] }
+    { postId: string; formData: FormData; selectFields: string[] }
   >({
-    mutationFn: async ({ id, formData, selectFields }) => {
+    mutationFn: async ({ postId, formData, selectFields }) => {
       const res = await api.put<{ post: FlowerType }>(
-        `/post/${id}?select=${selectFields.join(",")}`,
+        `/post/${postId}?select=${selectFields.join(",")}`,
         formData,
         {
           headers: {
@@ -97,10 +97,10 @@ const useUpdatePost = () => {
       );
       return res.data;
     },
-    onSuccess: (data, { id }) => {
+    onSuccess: (data, { postId }) => {
       if (data?.post) {
         toast.success(`${data.post.title} updated successfully`);
-        queryClient.invalidateQueries({ queryKey: ["post", id] });
+        queryClient.invalidateQueries({ queryKey: ["post", postId] });
         queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
         queryClient.invalidateQueries({ queryKey: ["post-search"] });
         queryClient.invalidateQueries({ queryKey: ["post-all"] });
@@ -121,13 +121,13 @@ const useDeletePost = () => {
     AxiosError<{ error: string }>,
     string
   >({
-    mutationFn: async (id) => {
-      const res = await api.delete(`/post/${id}`);
+    mutationFn: async (postId) => {
+      const res = await api.delete(`/post/${postId}`);
       return res.data;
     },
-    onSuccess: ({ message }, id) => {
+    onSuccess: ({ message }, postId) => {
       toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ["post", id] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
       queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
       queryClient.invalidateQueries({ queryKey: ["post-search"] });
       queryClient.invalidateQueries({ queryKey: ["post-all"] });

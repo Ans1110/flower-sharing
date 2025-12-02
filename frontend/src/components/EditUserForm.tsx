@@ -26,12 +26,12 @@ type EditUserFormProps = Readonly<{
   isLoading?: boolean;
 }>;
 
-export default function EditUserForm({
+const EditUserForm = ({
   user,
   onSubmit,
   onCancel,
   isLoading = false,
-}: EditUserFormProps) {
+}: EditUserFormProps) => {
   const methods = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -104,6 +104,7 @@ export default function EditUserForm({
                     <Image
                       src={avatarPreview}
                       alt="Avatar preview"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       fill
                       className="object-cover"
                     />
@@ -111,6 +112,7 @@ export default function EditUserForm({
                     <Image
                       src={user.avatar}
                       alt="Current avatar"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       fill
                       className="object-cover"
                     />
@@ -162,4 +164,7 @@ export default function EditUserForm({
       </form>
     </FormProvider>
   );
-}
+};
+
+export default EditUserForm;
+export { EditUserForm };

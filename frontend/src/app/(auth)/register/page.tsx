@@ -115,6 +115,7 @@ export default function Register() {
                       name="username"
                       type="text"
                       placeholder="Enter your username"
+                      disabled={isSubmitting || mutation.isPending}
                       className="h-12 text-lg"
                     />
                   </div>
@@ -131,6 +132,7 @@ export default function Register() {
                       name="email"
                       type="email"
                       placeholder="Enter your email address"
+                      disabled={isSubmitting || mutation.isPending}
                       className="h-12 text-lg"
                     />
                   </div>
@@ -147,6 +149,7 @@ export default function Register() {
                       name="password"
                       type="password"
                       placeholder="Enter your password"
+                      disabled={isSubmitting || mutation.isPending}
                       className="h-12 text-lg"
                     />
                   </div>

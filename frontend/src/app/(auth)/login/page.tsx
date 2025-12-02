@@ -114,6 +114,7 @@ export default function Login() {
                     name="email"
                     type="email"
                     placeholder="Enter your email address"
+                    disabled={isSubmitting || mutation.isPending}
                     className="h-12 text-lg"
                   />
                 </div>
@@ -130,6 +131,7 @@ export default function Login() {
                     name="password"
                     type="password"
                     placeholder="Enter your password"
+                    disabled={isSubmitting || mutation.isPending}
                     className="h-12 text-lg"
                   />
                 </div>
