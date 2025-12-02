@@ -1,11 +1,7 @@
 import { api } from "@/service/api";
 import { useAuthStore } from "@/store/auth";
 import { FlowerPaginationResponseType } from "@/types/flower";
-import {
-  UserAdminResponseType,
-  UserPayloadType,
-  UserPublicResponseType,
-} from "@/types/user";
+import { UserAdminResponseType, UserPublicResponseType } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -31,11 +27,15 @@ const useGetUserById = (id: string) => {
     queryFn: async () => {
       const isAdmin = useAuthStore.getState().user?.role === "admin";
       if (isAdmin) {
-        const res = await api.get<UserAdminResponseType>(`/admin/user/${id}`);
-        return res.data;
+        const res = await api.get<{ user: UserAdminResponseType }>(
+          `/admin/user/${id}`
+        );
+        return res.data.user;
       } else {
-        const res = await api.get<UserPublicResponseType>(`/user/${id}`);
-        return res.data;
+        const res = await api.get<{ user: UserPublicResponseType }>(
+          `/user/${id}`
+        );
+        return res.data.user;
       }
     },
     enabled: !!id,
@@ -58,15 +58,15 @@ const useGetUserByUsername = (username: string) => {
     queryFn: async () => {
       const isAdmin = useAuthStore.getState().user?.role === "admin";
       if (isAdmin) {
-        const res = await api.get<UserAdminResponseType>(
+        const res = await api.get<{ user: UserAdminResponseType }>(
           `/admin/user/username/${username}`
         );
-        return res.data;
+        return res.data.user;
       } else {
-        const res = await api.get<UserPublicResponseType>(
+        const res = await api.get<{ user: UserPublicResponseType }>(
           `/user/username/${username}`
         );
-        return res.data;
+        return res.data.user;
       }
     },
     enabled: !!username,
@@ -85,22 +85,26 @@ const useUpdateUserById = () => {
   return useMutation<
     UserAdminResponseType | UserPublicResponseType,
     AxiosError<{ error: string }>,
-    { userId: number; payload: UserPayloadType }
+    { userId: number; formData: FormData; selectFields: string[] }
   >({
-    mutationFn: async ({ userId, payload }) => {
+    mutationFn: async ({ userId, formData, selectFields }) => {
       const isAdmin = useAuthStore.getState().user?.role === "admin";
+      const endpoint = isAdmin
+        ? `/admin/user/id/${userId}/select?select=${selectFields.join(",")}`
+        : `/user/${userId}?select=${selectFields.join(",")}`;
+
       if (isAdmin) {
-        const res = await api.put<UserAdminResponseType>(
-          `/admin/user/${userId}`,
-          payload
+        const res = await api.put<{ user: UserAdminResponseType }>(
+          endpoint,
+          formData
         );
-        return res.data;
+        return res.data.user;
       } else {
-        const res = await api.put<UserPublicResponseType>(
-          `/user/${userId}`,
-          payload
+        const res = await api.put<{ user: UserPublicResponseType }>(
+          endpoint,
+          formData
         );
-        return res.data;
+        return res.data.user;
       }
     },
     onSuccess: (data, { userId }) => {

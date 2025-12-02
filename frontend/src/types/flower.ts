@@ -1,14 +1,14 @@
 import { UserType } from "./user";
 
 type FlowerType = {
-  id: string;
+  id: number;
   title: string;
   content: string;
-  imageUrl: string;
-  createdAt: string;
-  updatedAt: string;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
   author: UserType;
-  likes: UserType[];
+  likes_count: number;
 };
 
 type FlowerPayloadType = {

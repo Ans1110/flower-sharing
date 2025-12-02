@@ -2,7 +2,6 @@ import { api } from "@/service/api";
 import {
   FlowerPaginationResponseType,
   FlowerPaginationType,
-  FlowerPayloadType,
   FlowerResponseType,
   FlowerType,
 } from "@/types/flower";
@@ -50,20 +49,26 @@ const useGetPostsPagination = ({ page, limit }: FlowerPaginationType) => {
 const useCreatePost = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    FlowerResponseType,
+    { post: FlowerType },
     AxiosError<{ error: string }>,
-    FlowerPayloadType
+    FormData
   >({
-    mutationFn: async (payload) => {
-      const res = await api.post<FlowerResponseType>("/post", payload);
+    mutationFn: async (formData) => {
+      const res = await api.post<{ post: FlowerType }>("/post", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return res.data;
     },
-    onSuccess: ({ post }) => {
-      toast.success(`${post.title} created successfully`);
-      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
-      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
-      queryClient.invalidateQueries({ queryKey: ["post-search"] });
-      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+    onSuccess: (data) => {
+      if (data?.post) {
+        toast.success(`${data.post.title} created successfully`);
+        queryClient.invalidateQueries({ queryKey: ["post", data.post.id] });
+        queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
+        queryClient.invalidateQueries({ queryKey: ["post-search"] });
+        queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      }
     },
     onError: (error) => {
       toast.error(
@@ -73,23 +78,33 @@ const useCreatePost = () => {
   });
 };
 
-const useUpdatePost = (id: string) => {
+const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    FlowerResponseType,
+    { post: FlowerType },
     AxiosError<{ error: string }>,
-    FlowerPayloadType
+    { id: string; formData: FormData; selectFields: string[] }
   >({
-    mutationFn: async (payload) => {
-      const res = await api.put<FlowerResponseType>(`/post/${id}`, payload);
+    mutationFn: async ({ id, formData, selectFields }) => {
+      const res = await api.put<{ post: FlowerType }>(
+        `/post/${id}?select=${selectFields.join(",")}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return res.data;
     },
-    onSuccess: ({ post }) => {
-      toast.success(`${post.title} updated successfully`);
-      queryClient.invalidateQueries({ queryKey: ["post", id] });
-      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
-      queryClient.invalidateQueries({ queryKey: ["post-search"] });
-      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+    onSuccess: (data, { id }) => {
+      if (data?.post) {
+        toast.success(`${data.post.title} updated successfully`);
+        queryClient.invalidateQueries({ queryKey: ["post", id] });
+        queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
+        queryClient.invalidateQueries({ queryKey: ["post-search"] });
+        queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      }
     },
     onError: (error) => {
       toast.error(
@@ -138,44 +153,61 @@ const useSearchPosts = (query: string) => {
   });
 };
 
-const useLikePost = (id: string) => {
+const useLikePost = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, AxiosError<{ error: string }>, void>({
-    mutationFn: async () => {
+  return useMutation<
+    { message: string },
+    AxiosError<{ error: string }>,
+    string
+  >({
+    mutationFn: async (id) => {
       const res = await api.post<{ message: string }>(`/post/${id}/like`);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["post", id] });
       queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
       queryClient.invalidateQueries({ queryKey: ["post-search"] });
       queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      queryClient.invalidateQueries({ queryKey: ["user-liked-post-ids"] });
     },
     onError: (error) => {
-      toast.error(
-        error.response?.data?.error || "An unexpected error occurred"
-      );
+      const errorMessage =
+        error.response?.data?.error || "An unexpected error occurred";
+
+      if (
+        error.response?.status === 400 &&
+        errorMessage === "post already liked"
+      ) {
+        return;
+      }
+      toast.error(errorMessage);
     },
   });
 };
 
-const useDislikePost = (id: string) => {
+const useDislikePost = () => {
   const queryClient = useQueryClient();
-  return useMutation<{ message: string }, AxiosError<{ error: string }>, void>({
-    mutationFn: async () => {
+  return useMutation<
+    { message: string },
+    AxiosError<{ error: string }>,
+    string
+  >({
+    mutationFn: async (id) => {
       const res = await api.delete<{ message: string }>(`/post/${id}/dislike`);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["post", id] });
       queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
       queryClient.invalidateQueries({ queryKey: ["post-search"] });
       queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      queryClient.invalidateQueries({ queryKey: ["user-liked-post-ids"] });
     },
     onError: (error) => {
-      toast.error(
-        error.response?.data?.error || "An unexpected error occurred"
-      );
+      const errorMessage =
+        error.response?.data?.error || "An unexpected error occurred";
+      toast.error(errorMessage);
     },
   });
 };
@@ -207,6 +239,26 @@ const useGetUserLikedPosts = (userId: string, page: number, limit: number) => {
   });
 };
 
+// Hook to get all liked post IDs for the current user (for checking if a post is liked)
+const useGetUserLikedPostIds = (userId: number | undefined) => {
+  return useQuery<Set<number>, AxiosError<{ error: string }>>({
+    queryKey: ["user-liked-post-ids", userId],
+    queryFn: async () => {
+      // Fetch all liked posts (use high limit to get all)
+      const res = await api.get<FlowerPaginationResponseType>(
+        `/post/user/${userId}/liked`,
+        {
+          params: { page: 1, limit: 1000 },
+        }
+      );
+      // Return a Set of post IDs for O(1) lookup
+      return new Set(res.data.posts.map((post) => post.id));
+    },
+    enabled: !!userId,
+    staleTime: 30000, // Cache for 30 seconds
+  });
+};
+
 export {
   useGetAllPosts,
   useGetPostById,
@@ -219,4 +271,5 @@ export {
   useDislikePost,
   useGetPostLikes,
   useGetUserLikedPosts,
+  useGetUserLikedPostIds,
 };

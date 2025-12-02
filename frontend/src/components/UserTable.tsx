@@ -77,6 +77,7 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
+                    {user.avatar && (
                     <Link href={`/profile/${user.id}`}>
                       <AvatarImage
                         src={user.avatar}
@@ -84,6 +85,7 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
                         className="object-cover"
                       />
                     </Link>
+                    )}
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold">
                       {getInitials(user.username)}
                     </AvatarFallback>
@@ -117,9 +119,9 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
                 <div className="flex items-center justify-end gap-2">
                   <Link href={`/admin/users/${user.id}/edit`}>
                     <Button variant="outline" size="sm" className="h-8 gap-1.5">
-                      <Edit className="h-3.5 w-3.5" />
-                      Edit
-                    </Button>
+                    <Edit className="h-3.5 w-3.5" />
+                    Edit
+                  </Button>
                   </Link>
                   <Button
                     variant="destructive"

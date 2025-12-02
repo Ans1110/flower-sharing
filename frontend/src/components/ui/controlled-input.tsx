@@ -17,6 +17,7 @@ const ControlledInput = <T extends FieldValues>({
   name,
   label,
   containerClassName,
+  onChange,
   ...props
 }: ControlledInputProps<T>) => {
   const { control } = useFormContext<T>();
@@ -30,22 +31,45 @@ const ControlledInput = <T extends FieldValues>({
       <Controller
         name={name}
         control={control}
-        render={({ field, fieldState: { error } }) => (
-          <>
-            <Input
-              type={type}
-              id={name}
-              data-slot="input"
-              aria-invalid={!!error}
-              className={className}
-              {...field}
-              {...props}
-            />
-            {!!error && (
-              <p className="text-destructive text-sm">{error.message}</p>
-            )}
-          </>
-        )}
+        render={({ field, fieldState: { error } }) => {
+          // For file inputs, don't spread the value prop
+          const { value, onChange: fieldOnChange, ...fieldProps } = field;
+
+          return (
+            <>
+              <Input
+                type={type}
+                id={name}
+                data-slot="input"
+                aria-invalid={!!error}
+                className={className}
+                {...(type === "file" ? fieldProps : field)}
+                onChange={(e) => {
+                  // Call both the field onChange and custom onChange
+                  if (type === "file") {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // For file inputs, store the file URL or name
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        fieldOnChange(reader.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  } else {
+                    fieldOnChange(e);
+                  }
+                  // Call custom onChange if provided
+                  onChange?.(e);
+                }}
+                {...props}
+              />
+              {!!error && (
+                <p className="text-destructive text-sm">{error.message}</p>
+              )}
+            </>
+          );
+        }}
       />
     </div>
   );

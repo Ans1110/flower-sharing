@@ -3,7 +3,7 @@ type UserType = {
   username: string;
   email: string;
   role: "user" | "admin";
-  avatar: string;
+  avatar: File | null;
 };
 
 type UserPublicResponseType = {
@@ -29,7 +29,7 @@ type UserAdminResponseType = {
 type UserPayloadType = {
   username: string;
   email: string;
-  avatar: string;
+  avatar: File | string | null;
 };
 
 export type {

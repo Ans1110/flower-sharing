@@ -22,7 +22,7 @@ export default function EditUserModal({
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const { id } = use(params);
-  const { data: user, isLoading, error } = useGetUserById(id);
+  const { data: user, isLoading, error, refetch } = useGetUserById(id);
   const { mutate: updateUser, isPending } = useUpdateUserById();
 
   const handleClose = () => {
@@ -30,10 +30,23 @@ export default function EditUserModal({
   };
 
   const handleSubmit = (payload: UserPayloadType) => {
+    const formData = new FormData();
+    formData.append("username", payload.username);
+    formData.append("email", payload.email);
+
+    if (payload.avatar instanceof File) {
+      formData.append("avatar", payload.avatar);
+    }
+
     updateUser(
-      { userId: Number(id), payload },
       {
-        onSuccess: () => {
+        userId: Number(id),
+        formData,
+        selectFields: ["id", "username", "email", "avatar", "role"],
+      },
+      {
+        onSuccess: async () => {
+          await refetch();
           handleClose();
         },
       }
