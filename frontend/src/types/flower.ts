@@ -1,4 +1,4 @@
-import { UserType } from "./user";
+import { UserAdminResponseType, UserType } from "./user";
 
 type FlowerType = {
   id: number;
@@ -8,6 +8,17 @@ type FlowerType = {
   created_at: string;
   updated_at: string;
   author: UserType;
+  likes_count: number;
+};
+
+type FlowerAdminResponseType = {
+  id: number;
+  title: string;
+  content: string;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
+  author: UserAdminResponseType;
   likes_count: number;
 };
 
@@ -40,4 +51,5 @@ export type {
   FlowerPaginationType,
   FlowerPaginationResponseType,
   FlowerResponseType,
+  FlowerAdminResponseType,
 };

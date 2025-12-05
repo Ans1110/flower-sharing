@@ -4,17 +4,20 @@ import {
   FlowerPaginationType,
   FlowerResponseType,
   FlowerType,
+  FlowerAdminResponseType,
 } from "@/types/flower";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 const useGetAllPosts = () => {
-  return useQuery<FlowerType[], AxiosError<{ error: string }>>({
+  return useQuery<FlowerAdminResponseType[], AxiosError<{ error: string }>>({
     queryKey: ["post-all"],
     queryFn: async () => {
-      const res = await api.get<FlowerType[]>(`/post/all`);
-      return res.data;
+      const res = await api.get<{ posts: FlowerAdminResponseType[] }>(
+        `/post/all`
+      );
+      return res.data.posts;
     },
   });
 };
@@ -144,10 +147,10 @@ const useSearchPosts = (query: string) => {
   return useQuery<FlowerType[], AxiosError<{ error: string }>>({
     queryKey: ["post-search", query],
     queryFn: async () => {
-      const res = await api.get<FlowerType[]>(`/post/search`, {
+      const res = await api.get<{ posts: FlowerType[] }>(`/post/search`, {
         params: { query },
       });
-      return res.data;
+      return res.data.posts;
     },
     enabled: query.length > 0,
   });

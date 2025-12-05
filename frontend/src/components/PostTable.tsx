@@ -1,4 +1,6 @@
-import { UserAdminResponseType } from "@/types/user";
+import { FlowerAdminResponseType } from "@/types/flower";
+import { Edit, FileText, Heart, Trash2 } from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -7,28 +9,25 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Edit, Trash2, FileText, UserCircle } from "lucide-react";
-import Link from "next/link";
 import { formatDate, getUserInitials } from "@/lib/utils";
+import { Button } from "./ui/button";
 
-type UserTableProps = {
-  users: UserAdminResponseType[];
-  onDeleteUser: (userId: number) => void;
+type PostTableProps = {
+  posts: FlowerAdminResponseType[];
+  onDeletePost: (postId: number) => void;
 };
 
-const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
-  if (users.length === 0) {
+const PostTable = ({ posts, onDeletePost }: PostTableProps) => {
+  if (posts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <UserCircle className="mb-4 h-12 w-12 text-muted-foreground/50" />
+        <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
         <p className="text-sm font-medium text-muted-foreground">
-          No users found
+          No posts found
         </p>
         <p className="text-xs text-muted-foreground">
-          Users will appear here once they register
+          Posts will appear here once they are created
         </p>
       </div>
     );
@@ -40,64 +39,66 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
         <TableHeader>
           <TableRow className="bg-muted/50">
             <TableHead className="w-[80px]">ID</TableHead>
-            <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead className="w-[100px]">Role</TableHead>
-            <TableHead className="w-[100px] text-center">Posts</TableHead>
-            <TableHead className="w-[140px]">Joined</TableHead>
-            <TableHead className="w-[180px] text-right">Actions</TableHead>
+            <TableHead className="w-[120px]">Title</TableHead>
+            <TableHead className="w-[100px] text-center">Author</TableHead>
+            <TableHead className="w-[100px] text-center">Likes</TableHead>
+            <TableHead className="w-[100px]">Created</TableHead>
+            <TableHead className="w-[120px] text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id} className="hover:bg-muted/50">
+          {posts.map((post) => (
+            <TableRow key={post.id} className="hover:bg-muted/50">
               <TableCell className="font-medium text-muted-foreground">
-                #{user.id}
+                #{post.id}
+              </TableCell>
+              <TableCell>
+                <Link
+                  href={`/flowers/${post.id}`}
+                  className="flex items-center gap-2 hover:underline"
+                >
+                  <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <p className="line-clamp-2">{post.title}</p>
+                </Link>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
-                    {user.avatar && (
-                      <Link href={`/profile/${user.id}`}>
+                    {post.author.avatar && (
+                      <Link href={`/profile/${post.author.id}`}>
                         <AvatarImage
-                          src={user.avatar}
-                          alt={user.username}
+                          src={post.author.avatar}
+                          alt={post.author.username}
                           className="object-cover"
                         />
                       </Link>
                     )}
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold">
-                      {getUserInitials(user.username)}
+                      {getUserInitials(post.author.username)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">{user.username}</p>
-                  </div>
+                  <Link
+                    href={`/profile/${post.author.id}`}
+                    className="hover:underline"
+                  >
+                    <p className="line-clamp-1 hover:underline">
+                      {post.author.username}
+                    </p>
+                  </Link>
                 </div>
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {user.email}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant={user.role === "admin" ? "default" : "secondary"}
-                  className="capitalize"
-                >
-                  {user.role}
-                </Badge>
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-1.5">
-                  <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="font-medium">{user.posts}</span>
+                  <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="font-medium">{post.likes_count}</span>
                 </div>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {formatDate(user.created_at)}
+                {formatDate(post.created_at)}
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">
-                  <Link href={`/admin/users/${user.id}/edit`}>
+                  <Link href={`/admin/posts/${post.id}/edit`}>
                     <Button variant="outline" size="sm" className="h-8 gap-1.5">
                       <Edit className="h-3.5 w-3.5" />
                       Edit
@@ -107,7 +108,7 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
                     variant="destructive"
                     size="sm"
                     className="h-8 gap-1.5"
-                    onClick={() => onDeleteUser(user.id)}
+                    onClick={() => onDeletePost(post.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete
@@ -122,5 +123,5 @@ const UserTable = ({ users, onDeleteUser }: UserTableProps) => {
   );
 };
 
-export default UserTable;
-export { UserTable };
+export default PostTable;
+export { PostTable };

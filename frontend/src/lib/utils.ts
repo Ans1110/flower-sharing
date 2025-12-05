@@ -19,3 +19,24 @@ export function toNumberSafe(
   const parsed = Number(value);
   return Number.isNaN(parsed) ? 0 : parsed;
 }
+
+export function formatDate(dateString: string) {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+
+  // Check if date is valid
+  if (Number.isNaN(date.getTime())) {
+    return "N/A";
+  }
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function getUserInitials(username: string) {
+  return username.slice(0, 1).toUpperCase();
+}

@@ -29,7 +29,7 @@ import { toast } from "sonner";
 
 export default function Flowers() {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { data: searchResults, isLoading: isSearching } =
     useSearchPosts(debouncedSearchQuery);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +39,10 @@ export default function Flowers() {
   });
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  // Include debounce pending state in loading check
+  const isSearchPending =
+    searchQuery !== debouncedSearchQuery && searchQuery.length > 0;
+  const isSearchLoading = isSearching || isSearchPending;
   const displayData = searchQuery ? searchResults : posts?.posts;
   const pagination =
     posts && "totalPages" in posts
@@ -111,7 +115,8 @@ export default function Flowers() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold bg-linear-to-r from-rose-600 via-pink-600 to-blue-400 dark:to-violet-200  bg-clip-text text-transparent mb-4">
-            Beautiful Flowers, Beautiful Moments
+            Beautiful Flowers
+            <span className="hidden md:inline">, Beautiful Moments</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Discover and share the beauty of flowers with our community.
@@ -141,13 +146,13 @@ export default function Flowers() {
                 <X className="size-4" />
               </Button>
             )}
-            {isSearching && searchQuery && (
+            {isSearchLoading && searchQuery && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2 z-10">
                 <div className="w-4 h-4 border-2 border-rose-200 dark:border-rose-800 rounded-full animate-spin"></div>
               </div>
             )}
           </div>
-          {isSearching && searchQuery && (
+          {isSearchLoading && searchQuery && (
             <p className="text-center text-sm text-rose-600 dark:text-rose-400">
               Searching flowers...
             </p>
@@ -171,7 +176,17 @@ export default function Flowers() {
         )}
 
         {/* Flower Grid */}
-        {displayData && displayData.length > 0 ? (
+        {isSearchLoading && searchQuery ? (
+          // Search Loading State
+          <div className="flex justify-center items-center py-20">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-rose-200 dark:border-rose-800 border-t-rose-500 dark:border-t-rose-400 rounded-full animate-spin"></div>
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                Searching for &quot;{searchQuery}&quot;...
+              </p>
+            </div>
+          </div>
+        ) : displayData && displayData.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayData.map((flower: FlowerType) => (
               <FlowerCard

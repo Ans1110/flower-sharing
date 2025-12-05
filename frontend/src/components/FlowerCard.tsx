@@ -46,7 +46,9 @@ const FlowerCard = ({
             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <Link href={`/flowers/${flower.id}`} className="absolute inset-0">
+            <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          </Link>
         </div>
       )}
 

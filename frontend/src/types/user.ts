@@ -22,8 +22,7 @@ type UserAdminResponseType = {
   likes: number;
   followers: number;
   following: number;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
 };
 
 type UserPayloadType = {
