@@ -1,4 +1,32 @@
 basePath: /api/v1
+definitions:
+  auth_controller.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth_controller.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        maxLength: 15
+        minLength: 2
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -16,21 +44,16 @@ paths:
   /auth/login:
     post:
       consumes:
-      - multipart/form-data
+      - application/json
       description: Authenticate user with email and password, returns access and refresh
         tokens
       parameters:
-      - description: Email address
-        in: formData
-        name: email
+      - description: Login credentials
+        in: body
+        name: credentials
         required: true
-        type: string
-      - description: Password (min 8 characters, must include uppercase, lowercase,
-          digit, and special character)
-        in: formData
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/auth_controller.LoginRequest'
       produces:
       - application/json
       responses:
@@ -109,30 +132,15 @@ paths:
   /auth/register:
     post:
       consumes:
-      - multipart/form-data
-      description: Create a new user account with username, email, password, and optional
-        avatar
+      - application/json
+      description: Create a new user account with username, email, and password
       parameters:
-      - description: Username (2-15 characters)
-        in: formData
-        name: username
+      - description: Registration credentials
+        in: body
+        name: credentials
         required: true
-        type: string
-      - description: Email address
-        in: formData
-        name: email
-        required: true
-        type: string
-      - description: Password (min 8 characters, must include uppercase, lowercase,
-          digit, and special character)
-        in: formData
-        name: password
-        required: true
-        type: string
-      - description: Avatar image file
-        in: formData
-        name: avatar
-        type: file
+        schema:
+          $ref: '#/definitions/auth_controller.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -983,6 +991,48 @@ paths:
             additionalProperties: true
             type: object
       summary: Update user profile
+      tags:
+      - users
+  /user/unfollow/{follower_id}/{following_id}:
+    post:
+      description: Unfollow another user
+      parameters:
+      - description: Follower user ID
+        in: path
+        name: follower_id
+        required: true
+        type: integer
+      - description: User to unfollow ID
+        in: path
+        name: following_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unfollow a user
       tags:
       - users
   /user/username/{username}:
