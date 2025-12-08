@@ -2,6 +2,7 @@ package post_controller
 
 import (
 	"flower-backend/utils"
+	"mime/multipart"
 	"net/http"
 	"strings"
 
@@ -56,11 +57,19 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 
 	title := c.PostForm("title")
 	content := c.PostForm("content")
-	imageFile, err := c.FormFile("image")
-	if err != nil {
-		pc.logger.Error("failed to get image file", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
-		return
+
+	// Only try to get image file if image_url is in selectFields
+	var imageFile *multipart.FileHeader
+	for _, field := range selectFields {
+		if field == "image_url" {
+			imageFile, err = c.FormFile("image")
+			if err != nil {
+				pc.logger.Error("failed to get image file", zap.Error(err))
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
+				return
+			}
+			break
+		}
 	}
 
 	updates := make(map[string]any)

@@ -121,6 +121,7 @@ func (r *postRepository) GetUserLikedPosts(userID uint, page, limit int) ([]mode
 		Joins("JOIN post_likes ON post_likes.post_id = posts.id").
 		Where("post_likes.user_id = ?", userID).
 		Preload("User").
+		Preload("Likes").
 		Order("posts.created_at DESC").
 		Offset(offset).
 		Limit(limit).

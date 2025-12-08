@@ -54,6 +54,9 @@ Thumbs.db
 *.log
 logs/
 
+# Scripts
+scripts/
+
 # Temporary files
 tmp/
 temp/

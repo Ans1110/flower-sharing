@@ -59,7 +59,8 @@ func (r *userRepository) GetFollowers(userID uint) ([]models.User, error) {
 	var user models.User
 	if err := r.db.First(&user, userID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, gorm.ErrRecordNotFound
+			r.logger.Warn("user not found when getting followers", zap.Uint("user_id", userID))
+			return []models.User{}, nil
 		}
 		r.logger.Error("failed to find user", zap.Error(err))
 		return nil, err
@@ -77,7 +78,8 @@ func (r *userRepository) GetFollowing(userID uint) ([]models.User, error) {
 	var user models.User
 	if err := r.db.First(&user, userID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, gorm.ErrRecordNotFound
+			r.logger.Warn("user not found when getting following", zap.Uint("user_id", userID))
+			return []models.User{}, nil
 		}
 		r.logger.Error("failed to find user", zap.Error(err))
 		return nil, err

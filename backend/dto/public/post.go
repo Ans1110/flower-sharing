@@ -22,6 +22,12 @@ func ToPublicPost(post *models.Post) PublicPostDTO {
 		return PublicPostDTO{}
 	}
 
+	// Count likes - handle both preloaded and non-preloaded cases
+	likesCount := 0
+	if post.Likes != nil {
+		likesCount = len(post.Likes)
+	}
+
 	return PublicPostDTO{
 		ID:        post.ID,
 		Title:     utils.SanitizeString(post.Title),
@@ -30,7 +36,7 @@ func ToPublicPost(post *models.Post) PublicPostDTO {
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 		Author:    ToPublicUser(&post.User),
-		Likes:     len(post.Likes),
+		Likes:     likesCount,
 	}
 }
 
