@@ -11,6 +11,7 @@ import {
   useLikePost,
   useSearchPosts,
 } from "@/hooks/api/flowers";
+import { useGetUserFollowing, useToggleFollow } from "@/hooks/api/user";
 import { useDebounce } from "@/hooks/useDeboundce";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
@@ -24,7 +25,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function Flowers() {
@@ -56,6 +57,18 @@ export default function Flowers() {
   const likeFlower = useLikePost();
   const dislikeFlower = useDislikePost();
   const { data: likedPostIds } = useGetUserLikedPostIds(user?.id);
+  const { data: followingList } = useGetUserFollowing(
+    user?.id?.toString() ?? ""
+  );
+
+  // Create a Set of following IDs for O(1) lookup
+  const followingIds = useMemo(() => {
+    const ids = new Set<number>();
+    if (Array.isArray(followingList)) {
+      followingList.forEach((u) => ids.add(u.id));
+    }
+    return ids;
+  }, [followingList]);
 
   const handleDeleteFlower = (id: string) => {
     deleteFlower.mutate(id);
@@ -70,9 +83,6 @@ export default function Flowers() {
     // Try to like the post
     // If it's already liked (400 error), automatically toggle to dislike
     likeFlower.mutate(id, {
-      onSuccess: () => {
-        toast.success("Flower liked successfully");
-      },
       onError: (error) => {
         // If post is already liked, toggle to dislike
         if (
@@ -80,15 +90,30 @@ export default function Flowers() {
           error.response?.data?.error === "post already liked"
         ) {
           dislikeFlower.mutate(id, {
-            onSuccess: () => {
-              toast.success("Flower unliked successfully");
-            },
             onError: () => {
               toast.error("Failed to unlike flower");
             },
           });
         }
       },
+    });
+  };
+
+  const toggleFollow = useToggleFollow();
+
+  const handleFollowAuthor = (
+    authorId: number,
+    isCurrentlyFollowing: boolean
+  ) => {
+    if (!isAuthenticated || !user?.id) {
+      toast.error("Please login to follow users");
+      return;
+    }
+
+    toggleFollow.mutate({
+      followerId: user.id.toString(),
+      followingId: authorId.toString(),
+      isFollowing: isCurrentlyFollowing,
     });
   };
 
@@ -188,17 +213,33 @@ export default function Flowers() {
           </div>
         ) : displayData && displayData.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayData.map((flower: FlowerType) => (
-              <FlowerCard
-                key={flower.id}
-                flower={flower}
-                isAuthenticated={isAuthenticated}
-                isAuthor={flower.author?.id === user?.id}
-                isLiked={likedPostIds?.has(flower.id) ?? false}
-                onDelete={() => handleDeleteFlower(flower.id.toString())}
-                onLike={() => handleLikeFlower(flower.id.toString())}
-              />
-            ))}
+            {displayData.map((flower: FlowerType) => {
+              const isAuthor = flower.author?.id === user?.id;
+              const isFollowingAuthor = flower.author?.id
+                ? followingIds.has(flower.author.id)
+                : false;
+              return (
+                <FlowerCard
+                  key={flower.id}
+                  flower={flower}
+                  isAuthenticated={isAuthenticated}
+                  isAuthor={isAuthor}
+                  isLiked={likedPostIds?.has(flower.id) ?? false}
+                  isFollowingAuthor={isFollowingAuthor}
+                  onDelete={() => handleDeleteFlower(flower.id.toString())}
+                  onLike={() => handleLikeFlower(flower.id.toString())}
+                  onFollow={
+                    flower.author?.id
+                      ? () =>
+                          handleFollowAuthor(
+                            flower.author.id,
+                            isFollowingAuthor
+                          )
+                      : undefined
+                  }
+                />
+              );
+            })}
           </div>
         ) : (
           // Empty State

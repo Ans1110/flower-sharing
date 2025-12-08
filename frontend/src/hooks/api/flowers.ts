@@ -130,10 +130,12 @@ const useDeletePost = () => {
     },
     onSuccess: ({ message }, postId) => {
       toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
-      queryClient.invalidateQueries({ queryKey: ["post-search"] });
-      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      // Invalidate all post-related queries
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
+      queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
+      queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["user-liked-post-ids"] });
     },
     onError: (error) => {
       toast.error(
@@ -168,10 +170,11 @@ const useLikePost = () => {
       return res.data;
     },
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["post", id] });
-      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
-      queryClient.invalidateQueries({ queryKey: ["post-search"] });
-      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      // Invalidate all queries that might contain this post
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
+      queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
+      queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
       queryClient.invalidateQueries({ queryKey: ["user-liked-post-ids"] });
     },
     onError: (error) => {
@@ -201,10 +204,11 @@ const useDislikePost = () => {
       return res.data;
     },
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["post", id] });
-      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
-      queryClient.invalidateQueries({ queryKey: ["post-search"] });
-      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      // Invalidate all queries that might contain this post
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
+      queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
+      queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
       queryClient.invalidateQueries({ queryKey: ["user-liked-post-ids"] });
     },
     onError: (error) => {
@@ -262,6 +266,19 @@ const useGetUserLikedPostIds = (userId: number | undefined) => {
   });
 };
 
+const useGetPostsByUserId = (userId: string) => {
+  return useQuery<FlowerType[], AxiosError<{ error: string }>>({
+    queryKey: ["posts-by-user", userId],
+    queryFn: async () => {
+      const res = await api.get<{ posts: FlowerType[] }>(
+        `/post/user/${userId}/all`
+      );
+      return res.data.posts;
+    },
+    enabled: !!userId,
+  });
+};
+
 export {
   useGetAllPosts,
   useGetPostById,
@@ -275,4 +292,5 @@ export {
   useGetPostLikes,
   useGetUserLikedPosts,
   useGetUserLikedPostIds,
+  useGetPostsByUserId,
 };

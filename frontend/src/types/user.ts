@@ -3,7 +3,7 @@ type UserType = {
   username: string;
   email: string;
   role: "user" | "admin";
-  avatar: File | null;
+  avatar: string | null;
 };
 
 type UserPublicResponseType = {

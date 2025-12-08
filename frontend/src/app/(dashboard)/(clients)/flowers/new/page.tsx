@@ -68,8 +68,7 @@ export default function NewFlower() {
 
     createFlower.mutate(formData, {
       onSuccess: () => {
-        toast.success("Flower created successfully");
-        router.push("/flowers");
+        router.back();
       },
       onError: (error) => {
         toast.error(
@@ -201,7 +200,7 @@ export default function NewFlower() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.push("/flowers")}
+                    onClick={() => router.back()}
                     className="flex-1 h-12 text-lg border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-400 dark:hover:bg-rose-900/50 dark:hover:text-rose-300"
                   >
                     <ArrowLeft className="size-4 mr-2" />

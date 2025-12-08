@@ -19,7 +19,8 @@ export default function LayoutContent({
   const validateAuth = useAuthStore((state) => state.validateAuth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) =>
+    pathname === path || (pathname.startsWith(path) && path !== "/");
 
   // Validate auth state on mount and when localStorage changes
   useEffect(() => {

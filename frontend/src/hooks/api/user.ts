@@ -39,12 +39,12 @@ const useGetUserById = (id: string) => {
       }
     },
     enabled: !!id,
-    meta: {
-      onError: (error: AxiosError<{ error: string }>) => {
-        toast.error(
-          error.response?.data?.error || "An unexpected error occurred"
-        );
-      },
+    retry: (failureCount, error) => {
+      // Don't retry if user not found (404)
+      if (error.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 3;
     },
   });
 };
@@ -91,7 +91,7 @@ const useUpdateUserById = () => {
       const isAdmin = useAuthStore.getState().user?.role === "admin";
       const endpoint = isAdmin
         ? `/admin/user/id/${userId}/select?select=${selectFields.join(",")}`
-        : `/user/${userId}?select=${selectFields.join(",")}`;
+        : `/user/id/${userId}/select?select=${selectFields.join(",")}`;
 
       if (isAdmin) {
         const res = await api.put<{ user: UserAdminResponseType }>(
@@ -109,7 +109,10 @@ const useUpdateUserById = () => {
     },
     onSuccess: (data, { userId }) => {
       toast.success(`User updated successfully`);
-      queryClient.invalidateQueries({ queryKey: ["user-id", userId] });
+      // Remove old cache and refetch user queries
+      queryClient.removeQueries({
+        queryKey: ["user-id", userId.toString()],
+      });
       queryClient.invalidateQueries({
         queryKey: ["user-username", data.username],
       });
@@ -160,8 +163,16 @@ const useFollowUser = (followerId: string, followingId: string) => {
     },
     onSuccess: ({ message }) => {
       toast.success(message);
+      // Invalidate user queries
       queryClient.invalidateQueries({ queryKey: ["user-id", followerId] });
       queryClient.invalidateQueries({ queryKey: ["user-id", followingId] });
+      // Invalidate followers/following lists
+      queryClient.invalidateQueries({
+        queryKey: ["user-following", followerId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user-followers", followingId],
+      });
     },
     onError: (error: AxiosError<{ error: string }>) => {
       toast.error(
@@ -184,6 +195,45 @@ const useUnfollowUser = (followerId: string, followingId: string) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["user-id", followerId] });
       queryClient.invalidateQueries({ queryKey: ["user-id", followingId] });
+      // Invalidate followers/following lists
+      queryClient.invalidateQueries({
+        queryKey: ["user-following", followerId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user-followers", followingId],
+      });
+    },
+    onError: (error: AxiosError<{ error: string }>) => {
+      toast.error(
+        error.response?.data?.error || "An unexpected error occurred"
+      );
+    },
+  });
+};
+
+// Dynamic follow hook - accepts followingId as mutation parameter
+const useToggleFollow = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { message: string },
+    AxiosError<{ error: string }>,
+    { followerId: string; followingId: string; isFollowing: boolean }
+  >({
+    mutationFn: async ({ followerId, followingId, isFollowing }) => {
+      const endpoint = isFollowing
+        ? `/user/unfollow/${followerId}/${followingId}`
+        : `/user/follow/${followerId}/${followingId}`;
+      const res = await api.post<{ message: string }>(endpoint);
+      return res.data;
+    },
+    onSuccess: ({ message }, { followerId, followingId }) => {
+      toast.success(message);
+      queryClient.invalidateQueries({
+        queryKey: ["user-following", followerId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["user-followers", followingId],
+      });
     },
     onError: (error: AxiosError<{ error: string }>) => {
       toast.error(
@@ -197,10 +247,18 @@ const useGetUserFollowers = (userId: string) => {
   return useQuery<UserPublicResponseType[], AxiosError<{ error: string }>>({
     queryKey: ["user-followers", userId],
     queryFn: async () => {
-      const res = await api.get<UserPublicResponseType[]>(
+      const res = await api.get<{ followers: UserPublicResponseType[] }>(
         `/user/followers/${userId}`
       );
-      return res.data;
+      return res.data.followers;
+    },
+    enabled: !!userId,
+    retry: (failureCount, error) => {
+      // Don't retry if user not found (404)
+      if (error.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 3;
     },
   });
 };
@@ -209,10 +267,18 @@ const useGetUserFollowing = (userId: string) => {
   return useQuery<UserPublicResponseType[], AxiosError<{ error: string }>>({
     queryKey: ["user-following", userId],
     queryFn: async () => {
-      const res = await api.get<UserPublicResponseType[]>(
+      const res = await api.get<{ following: UserPublicResponseType[] }>(
         `/user/following/${userId}`
       );
-      return res.data;
+      return res.data.following;
+    },
+    enabled: !!userId,
+    retry: (failureCount, error) => {
+      // Don't retry if user not found (404)
+      if (error.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 3;
     },
   });
 };
@@ -221,9 +287,12 @@ const useGetUserFollowersCount = (userId: string) => {
   return useQuery<number, AxiosError<{ error: string }>>({
     queryKey: ["user-followers-count", userId],
     queryFn: async () => {
-      const res = await api.get<number>(`/user/followers-count/${userId}`);
-      return res.data;
+      const res = await api.get<{ followers_count: number }>(
+        `/user/followers-count/${userId}`
+      );
+      return res.data.followers_count;
     },
+    enabled: !!userId,
   });
 };
 
@@ -231,9 +300,12 @@ const useGetUserFollowingCount = (userId: string) => {
   return useQuery<number, AxiosError<{ error: string }>>({
     queryKey: ["user-following-count", userId],
     queryFn: async () => {
-      const res = await api.get<number>(`/user/following-count/${userId}`);
-      return res.data;
+      const res = await api.get<{ following_count: number }>(
+        `/user/following-count/${userId}`
+      );
+      return res.data.following_count;
     },
+    enabled: !!userId,
   });
 };
 
@@ -272,6 +344,7 @@ export {
   useDeleteUserById,
   useFollowUser,
   useUnfollowUser,
+  useToggleFollow,
   useGetUserFollowers,
   useGetUserFollowing,
   useGetUserFollowersCount,

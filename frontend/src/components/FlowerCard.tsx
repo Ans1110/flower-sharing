@@ -8,17 +8,28 @@ import {
 } from "./ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Heart, Pencil, Trash2, User } from "lucide-react";
+import {
+  Calendar,
+  Heart,
+  Pencil,
+  Trash2,
+  User,
+  UserPlus,
+  UserCheck,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { DeletePostDialog } from "./DeletePostDialog";
 
 type FlowerCardProps = {
   flower: FlowerType;
   isAuthenticated: boolean;
   isAuthor: boolean;
   isLiked?: boolean;
+  isFollowingAuthor?: boolean;
   onDelete: () => void;
   onLike: () => void;
+  onFollow?: () => void;
 };
 
 const FlowerCard = ({
@@ -26,8 +37,10 @@ const FlowerCard = ({
   isAuthenticated,
   isAuthor,
   isLiked = false,
+  isFollowingAuthor = false,
   onDelete,
   onLike,
+  onFollow,
 }: FlowerCardProps) => {
   return (
     <Card
@@ -79,9 +92,32 @@ const FlowerCard = ({
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <User className="size-3.5 text-rose-500 dark:text-rose-400" />
-            <span className="font-medium">
+            <Link
+              href={`/profile/${flower.author?.id}`}
+              className="font-medium hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+            >
               {isAuthor ? "You" : flower.author?.username || "Unknown"}
-            </span>
+            </Link>
+            {/* Follow Button */}
+            {isAuthenticated && !isAuthor && onFollow && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onFollow}
+                className={cn(
+                  "h-5 px-1.5 text-xs ml-1",
+                  isFollowingAuthor
+                    ? "text-rose-600 dark:text-rose-400"
+                    : "text-gray-400 hover:text-rose-600 dark:hover:text-rose-400"
+                )}
+              >
+                {isFollowingAuthor ? (
+                  <UserCheck className="size-3" />
+                ) : (
+                  <UserPlus className="size-3" />
+                )}
+              </Button>
+            )}
           </div>
           <div className="flex items-center gap-1 ml-auto">
             <Button
@@ -122,15 +158,21 @@ const FlowerCard = ({
               Edit
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-all"
-            onClick={onDelete}
-          >
-            <Trash2 className="size-3.5 mr-1.5" />
-            Delete
-          </Button>
+
+          <DeletePostDialog
+            postTitle={flower.title}
+            onDelete={onDelete}
+            trigger={
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-all"
+              >
+                <Trash2 className="size-3.5 mr-1.5" />
+                Delete
+              </Button>
+            }
+          />
         </CardFooter>
       )}
     </Card>

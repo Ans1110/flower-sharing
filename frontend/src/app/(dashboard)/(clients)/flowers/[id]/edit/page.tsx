@@ -1,6 +1,6 @@
 "use client";
 
-import PostEditModal from "../../../@modal/(.)flowers/[id]/edit/page";
+import PostEditModal from "../../@modal/(.)flowers/[id]/edit/page";
 
 export default function FlowerEditPage({
   params,

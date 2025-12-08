@@ -31,17 +31,23 @@ export default function PostEditModal({
 
   const handleSubmit = (payload: FlowerPayloadType) => {
     const formData = new FormData();
+    const selectFields = ["title", "content"];
+
+    // Always send title and content
     formData.append("title", payload.title);
     formData.append("content", payload.content);
+
+    // Only send image if a new one was uploaded
     if (payload.imageUrl instanceof File) {
       formData.append("image", payload.imageUrl);
+      selectFields.push("image_url");
     }
 
     updatePost(
       {
         postId: id,
         formData,
-        selectFields: ["id", "title", "content", "image_url"],
+        selectFields,
       },
       {
         onSuccess: async () => {

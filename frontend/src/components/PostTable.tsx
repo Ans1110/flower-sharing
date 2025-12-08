@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { formatDate, getUserInitials } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { DeletePostDialog } from "./DeletePostDialog";
 
 type PostTableProps = {
   posts: FlowerAdminResponseType[];
@@ -104,15 +105,21 @@ const PostTable = ({ posts, onDeletePost }: PostTableProps) => {
                       Edit
                     </Button>
                   </Link>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="h-8 gap-1.5"
-                    onClick={() => onDeletePost(post.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
+
+                  <DeletePostDialog
+                    postTitle={post.title}
+                    onDelete={() => onDeletePost(post.id)}
+                    trigger={
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="h-8 gap-1.5"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </Button>
+                    }
+                  />
                 </div>
               </TableCell>
             </TableRow>

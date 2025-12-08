@@ -12,6 +12,7 @@ type AuthActionType = {
   register: (user: UserType, accessToken: string) => void;
   logout: () => void;
   validateAuth: () => void;
+  updateUser: (updates: Partial<UserType>) => void;
 };
 
 type AuthStoreType = AuthStateType & AuthActionType;
@@ -60,6 +61,12 @@ const useAuthStore = createStore<AuthStoreType>(
             state.user = null;
             state.isAuthenticated = false;
           }
+        }
+      }),
+    updateUser: (updates: Partial<UserType>) =>
+      set((state) => {
+        if (state.user) {
+          state.user = { ...state.user, ...updates };
         }
       }),
   }),
