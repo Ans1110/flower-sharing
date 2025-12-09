@@ -40,3 +40,21 @@ export function formatDate(dateString: string) {
 export function getUserInitials(username: string) {
   return username.slice(0, 1).toUpperCase();
 }
+
+export function fallBackCopyToClipboard(text: string): string {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+
+  textArea.style.position = "fixed";
+  textArea.style.left = "-9999px";
+  textArea.style.top = "0";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  const success = document.execCommand("copy");
+  document.body.removeChild(textArea);
+
+  return success ? "Link copied to clipboard!" : "Failed to copy link";
+}

@@ -16,7 +16,7 @@ import {
   useGetUserFollowers,
   useUnfollowUser,
 } from "@/hooks/api/user";
-import { getUserInitials } from "@/lib/utils";
+import { fallBackCopyToClipboard, getUserInitials } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import {
   ArrowLeft,
@@ -24,6 +24,7 @@ import {
   Heart,
   Loader2,
   Pencil,
+  Share2,
   Trash2,
   UserMinus,
   UserPlus,
@@ -31,7 +32,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useEffect } from "react";
 import { toast } from "sonner";
 
 export default function FlowersDetail({
@@ -106,6 +107,18 @@ export default function FlowersDetail({
     }
   };
 
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success(fallBackCopyToClipboard(shareUrl));
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") return;
+      toast.success(fallBackCopyToClipboard(shareUrl));
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -124,7 +137,7 @@ export default function FlowersDetail({
           <p className="text-muted-foreground">
             {error ? "Error loading flower" : "Flower not found"}
           </p>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="rounded-none">
             <Link href="/">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back Home
@@ -141,18 +154,18 @@ export default function FlowersDetail({
         {/* Back Button */}
         <Button
           variant="ghost"
-          className="mb-6 text-muted-foreground hover:text-foreground"
+          className="mb-6 rounded-none text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-zinc-800/50"
           onClick={() => router.back()}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
 
-        {/* Main Content Card */}
-        <Card className="border-0 shadow-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl overflow-hidden">
+        {/* Main Content Card - Glassmorphism */}
+        <Card className="md:rounded-none border border-white/20 dark:border-white/10 shadow-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-2xl backdrop-saturate-150 overflow-hidden">
           {/* Hero Image */}
           {post.image_url && (
-            <div className="relative aspect-video sm:aspect-16/10 w-full overflow-hidden">
+            <div className="relative aspect-video sm:aspect-16/10 w-full overflow-hidden border-b border-white/20 dark:border-white/10">
               <Image
                 src={post.image_url}
                 alt={post.title}
@@ -172,17 +185,17 @@ export default function FlowersDetail({
             </h1>
 
             {/* Author Info & Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100 dark:border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/20 dark:border-white/10">
               {/* Author */}
               <div className="flex items-center gap-3">
                 <Link href={`/profile/${post.author.id}`}>
-                  <Avatar className="h-12 w-12 ring-2 ring-rose-100 dark:ring-rose-900/30">
+                  <Avatar className="h-12 w-12 ring-2 ring-white/30 dark:ring-white/10">
                     <AvatarImage
                       src={post.author.avatar ?? undefined}
                       alt={post.author.username}
-                      className="object-cover"
+                      className="object-cover "
                     />
-                    <AvatarFallback className="bg-linear-to-br from-rose-400 to-violet-500 text-white font-semibold">
+                    <AvatarFallback className=" bg-linear-to-br from-rose-400 to-violet-500 text-white font-semibold">
                       {getUserInitials(post.author.username)}
                     </AvatarFallback>
                   </Avatar>
@@ -215,8 +228,8 @@ export default function FlowersDetail({
                     size="sm"
                     className={
                       isFollowing
-                        ? "border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 ml-2"
-                        : "bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white ml-2"
+                        ? "rounded-none border-rose-200/50 dark:border-rose-800/50 bg-white/30 dark:bg-zinc-800/30 backdrop-blur-sm hover:bg-rose-50/50 dark:hover:bg-rose-900/30 hover:text-rose-600 ml-2"
+                        : "rounded-none bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white ml-2"
                     }
                   >
                     {followUser.isPending || unfollowUser.isPending ? (
@@ -238,15 +251,24 @@ export default function FlowersDetail({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
+                {/* Share Button */}
+                <Button
+                  onClick={handleShare}
+                  variant="outline"
+                  className="rounded-none border-violet-200/50 dark:border-violet-800/50 bg-white/30 dark:bg-zinc-800/30 backdrop-blur-sm text-violet-600 dark:text-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-900/30 hover:text-violet-700"
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+
                 {/* Like Button */}
                 <Button
                   onClick={handleLikePost}
                   disabled={!isAuthenticated || likePost.isPending}
                   variant="outline"
-                  className={`border-rose-200 dark:border-rose-800 ${
+                  className={`rounded-none border-rose-200/50 dark:border-rose-800/50 bg-white/30 dark:bg-zinc-800/30 backdrop-blur-sm ${
                     isLiked
-                      ? "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30"
-                      : "hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600"
+                      ? "text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/30"
+                      : "hover:bg-rose-50/50 dark:hover:bg-rose-900/30 hover:text-rose-600"
                   }`}
                 >
                   {likePost.isPending || dislikePost.isPending ? (
@@ -267,7 +289,7 @@ export default function FlowersDetail({
                     <Button
                       asChild
                       variant="outline"
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                      className="rounded-none border-blue-200/50 dark:border-blue-800/50 bg-white/30 dark:bg-zinc-800/30 backdrop-blur-sm text-blue-600 hover:bg-blue-50/50 hover:border-blue-300/50 dark:text-blue-400 dark:hover:bg-blue-900/30"
                     >
                       <Link href={`/flowers/${post.id}/edit`}>
                         <Pencil className="h-4 w-4 mr-2" />
@@ -282,7 +304,7 @@ export default function FlowersDetail({
                         <Button
                           variant="outline"
                           disabled={deletePost.isPending}
-                          className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30"
+                          className="rounded-none border-red-200/50 dark:border-red-800/50 bg-white/30 dark:bg-zinc-800/30 backdrop-blur-sm text-red-600 hover:bg-red-50/50 hover:border-red-300/50 dark:text-red-400 dark:hover:bg-red-900/30"
                         >
                           {deletePost.isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -307,7 +329,7 @@ export default function FlowersDetail({
 
             {/* Updated At */}
             {post.updated_at !== post.created_at && (
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
+              <div className="mt-6 pt-4 border-t border-white/20 dark:border-white/10">
                 <p className="text-sm text-muted-foreground">
                   Last updated:{" "}
                   {new Date(post.updated_at).toLocaleDateString("en-US", {
