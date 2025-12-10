@@ -36,6 +36,14 @@ type Config struct {
 	DBMaxIdleConns    int
 	DBConnMaxLifetime time.Duration
 	DBConnMaxIdleTime time.Duration
+	// OAuth configuration
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleRedirectURL  string
+	GithubClientID     string
+	GithubClientSecret string
+	GithubRedirectURL  string
+	FrontendURL        string
 }
 
 func LoadConfig() *Config {
@@ -77,6 +85,15 @@ func LoadConfig() *Config {
 	dbConnMaxLifetime := utils.ParseDuration(utils.GetEnv("DB_CONN_MAX_LIFETIME", "1h"))
 	dbConnMaxIdleTime := utils.ParseDuration(utils.GetEnv("DB_CONN_MAX_IDLE_TIME", "10m"))
 
+	// OAuth configurations
+	googleClientID := utils.GetEnv("GOOGLE_CLIENT_ID", "")
+	googleClientSecret := utils.GetEnv("GOOGLE_CLIENT_SECRET", "")
+	googleRedirectURL := utils.GetEnv("GOOGLE_REDIRECT_URL", "http://localhost:8080/api/v1/auth/google/callback")
+	githubClientID := utils.GetEnv("GITHUB_CLIENT_ID", "")
+	githubClientSecret := utils.GetEnv("GITHUB_CLIENT_SECRET", "")
+	githubRedirectURL := utils.GetEnv("GITHUB_REDIRECT_URL", "http://localhost:8080/api/v1/auth/github/callback")
+	frontendURL := utils.GetEnv("FRONTEND_URL", "http://localhost:3000")
+
 	return &Config{
 		Port:                 port,
 		APIBaseURL:           apiBaseURL,
@@ -106,5 +123,12 @@ func LoadConfig() *Config {
 		DBMaxIdleConns:       dbMaxIdleConns,
 		DBConnMaxLifetime:    dbConnMaxLifetime,
 		DBConnMaxIdleTime:    dbConnMaxIdleTime,
+		GoogleClientID:       googleClientID,
+		GoogleClientSecret:   googleClientSecret,
+		GoogleRedirectURL:    googleRedirectURL,
+		GithubClientID:       githubClientID,
+		GithubClientSecret:   githubClientSecret,
+		GithubRedirectURL:    githubRedirectURL,
+		FrontendURL:          frontendURL,
 	}
 }

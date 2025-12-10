@@ -16,8 +16,9 @@ func UserRoutes(r *gin.RouterGroup) {
 	userCtrl := public_user_controller.NewUserController(database.DB, cfg, logger)
 
 	user := r.Group("/user")
+	user.Use(middlewares.OptionalAuthenticate) // Optional auth - sets user_id if token is valid
 	{
-		// Public GET routes (no authentication required)
+		// Public GET routes (optional authentication)
 		user.GET("/:id", userCtrl.GetUserByID)
 		user.GET("/email/:email", userCtrl.GetUserByEmail)
 		user.GET("/username/:username", userCtrl.GetUserByUsername)

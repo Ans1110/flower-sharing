@@ -1,6 +1,8 @@
 package libs
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"flower-backend/config"
 	"flower-backend/log"
@@ -14,6 +16,7 @@ import (
 var cfg = config.LoadConfig()
 var logger = log.InitLog().Sugar()
 
+// GenerateAccessToken generates an access token with user ID (backward compatible)
 func GenerateAccessToken(UserId uint) string {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": UserId,
@@ -27,6 +30,7 @@ func GenerateAccessToken(UserId uint) string {
 	return accessTokenString
 }
 
+// GenerateRefreshToken generates a refresh token with user ID (backward compatible)
 func GenerateRefreshToken(UserId uint) string {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": UserId,
@@ -38,6 +42,15 @@ func GenerateRefreshToken(UserId uint) string {
 		return ""
 	}
 	return refreshTokenString
+}
+
+// GenerateRandomString generates a random string of specified length
+func GenerateRandomString(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return base64.URLEncoding.EncodeToString(b)[:length]
 }
 
 func VerifyAccessToken(tokenString string) (uint, error) {

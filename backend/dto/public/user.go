@@ -2,6 +2,7 @@ package public_dto
 
 import (
 	"strings"
+	"time"
 
 	"flower-backend/models"
 	"flower-backend/utils"
@@ -11,6 +12,16 @@ type PublicUserDTO struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
+}
+
+type AuthOwnerUserDTO struct {
+	ID        uint      `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	Avatar    string    `json:"avatar"`
+	CreatedAt time.Time `json:"created_at"`
+	Provider  string    `json:"provider"`
 }
 
 func ToPublicUser(user *models.User) PublicUserDTO {
@@ -61,4 +72,20 @@ func EnsurePublicUserSelectFields(fields []string) []string {
 	}
 
 	return cleaned
+}
+
+func ToAuthOwnerUser(user *models.User) AuthOwnerUserDTO {
+	if user == nil {
+		return AuthOwnerUserDTO{}
+	}
+
+	return AuthOwnerUserDTO{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		Role:      user.Role,
+		Avatar:    user.Avatar,
+		CreatedAt: user.CreatedAt,
+		Provider:  user.Provider,
+	}
 }

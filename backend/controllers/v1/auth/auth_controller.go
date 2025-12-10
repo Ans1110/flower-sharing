@@ -14,6 +14,11 @@ type AuthController interface {
 	Login(c *gin.Context)
 	Logout(c *gin.Context)
 	RefreshToken(c *gin.Context)
+	Me(c *gin.Context)
+	GoogleLogin(c *gin.Context)
+	GoogleCallback(c *gin.Context)
+	GithubLogin(c *gin.Context)
+	GithubCallback(c *gin.Context)
 }
 
 type authController struct {

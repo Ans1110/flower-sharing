@@ -32,7 +32,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { use } from "react";
 import { toast } from "sonner";
 
 export default function FlowersDetail({

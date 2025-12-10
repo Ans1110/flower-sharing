@@ -5,6 +5,7 @@ import (
 	auth_controller "flower-backend/controllers/v1/auth"
 	"flower-backend/database"
 	"flower-backend/log"
+	"flower-backend/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,5 +21,18 @@ func AuthRoutes(r *gin.RouterGroup) {
 		auth.POST("/login", authCtrl.Login)
 		auth.POST("/logout", authCtrl.Logout)
 		auth.POST("/refresh-token", authCtrl.RefreshToken)
+
+		// OAuth routes
+		auth.GET("/google", authCtrl.GoogleLogin)
+		auth.GET("/google/callback", authCtrl.GoogleCallback)
+		auth.GET("/github", authCtrl.GithubLogin)
+		auth.GET("/github/callback", authCtrl.GithubCallback)
+	}
+
+	// Protected auth routes
+	authProtected := r.Group("/auth")
+	authProtected.Use(middlewares.Authenticate)
+	{
+		authProtected.GET("/me", authCtrl.Me)
 	}
 }

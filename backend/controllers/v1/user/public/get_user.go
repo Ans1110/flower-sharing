@@ -14,7 +14,7 @@ import (
 // GetUserByID godoc
 //
 //	@Summary		Get user by ID
-//	@Description	Retrieve public user information by ID
+//	@Description	Retrieve public user information by ID. If authenticated user is viewing their own profile, returns full user data including email and created_at.
 //	@Tags			users
 //	@Produce		json
 //	@Param			id	path		int						true	"User ID"
@@ -41,7 +41,21 @@ func (uc *userController) GetUserByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"user": publicuserdto.ToPublicUser(user)})
+
+	// Check if authenticated user is viewing their own profile
+	authenticatedUserID, exists := c.Get("user_id")
+	isOwnProfile := exists && authenticatedUserID.(uint) == uint(userIdUint)
+
+	if isOwnProfile {
+		// Return full user data for own profile
+		c.JSON(http.StatusOK, gin.H{
+			"user": publicuserdto.ToAuthOwnerUser(user),
+		})
+	} else {
+		// Return public user data for other profiles
+		c.JSON(http.StatusOK, gin.H{"user": publicuserdto.ToPublicUser(user)})
+	}
+
 	uc.logger.Info("user fetched successfully", zap.Uint("user_id", uint(userIdUint)))
 }
 

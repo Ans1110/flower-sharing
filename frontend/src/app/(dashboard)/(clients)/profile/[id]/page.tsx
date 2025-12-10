@@ -271,7 +271,7 @@ export default function ProfilePage() {
                           <Calendar className="h-4 w-4" />
                           <span>
                             Joined{" "}
-                            {new Date(user.created_at).toLocaleDateString(
+                            {new Date(user.created_at ?? "").toLocaleDateString(
                               "en-US",
                               {
                                 month: "long",

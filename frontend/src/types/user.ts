@@ -4,12 +4,18 @@ type UserType = {
   email: string;
   role: "user" | "admin";
   avatar: string | null;
+  created_at?: string;
+  provider?: string;
 };
 
 type UserPublicResponseType = {
   id: number;
   username: string;
   avatar: string;
+  email?: string;
+  role?: "user" | "admin";
+  created_at?: string;
+  provider?: string;
 };
 
 type UserAdminResponseType = {
