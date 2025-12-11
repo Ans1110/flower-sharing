@@ -330,7 +330,7 @@ func (ctrl *authController) GithubCallback(c *gin.Context) {
 	}
 
 	// Set cookies
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("refreshToken", refreshToken, 7*24*60*60, "/", "", ctrl.cfg.GO_ENV == "production", true)
 	c.SetCookie("role", user.Role, 7*24*60*60, "/", "", ctrl.cfg.GO_ENV == "production", true)
 
