@@ -22,7 +22,7 @@ import (
 //	@Param			select		query		string					true	"Fields to update (comma-separated)"
 //	@Param			username	formData	string					false	"Username"
 //	@Param			email		formData	string					false	"Email"
-//	@Param			image		formData	file					false	"Avatar image"
+//	@Param			avatar		formData	file					false	"Avatar image"
 //	@Success		200			{object}	map[string]interface{}	"User updated successfully"
 //	@Failure		400			{object}	map[string]interface{}	"Bad request - invalid input"
 //	@Failure		403			{object}	map[string]interface{}	"Forbidden - you are not the owner of this user"
@@ -57,7 +57,7 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	username := c.PostForm("username")
 	email := c.PostForm("email")
-	imageFile, _ := c.FormFile("image") // Image is optional
+	imageFile, _ := c.FormFile("avatar") // Avatar is optional
 
 	updates := make(map[string]any)
 	if username != "" {

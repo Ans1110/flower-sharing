@@ -111,7 +111,7 @@ export default function ProfilePage() {
     }
 
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("avatar", file);
 
     updateUser.mutate(
       {

@@ -128,7 +128,7 @@ export default function ProfileEditPage() {
     formData.append("email", data.email || "");
 
     if (avatarFile) {
-      formData.append("image", avatarFile);
+      formData.append("avatar", avatarFile);
     }
 
     updateUser(
