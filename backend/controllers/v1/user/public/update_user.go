@@ -57,12 +57,7 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	username := c.PostForm("username")
 	email := c.PostForm("email")
-	imageFile, err := c.FormFile("image")
-	if err != nil {
-		uc.logger.Error("failed to get image file", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
-		return
-	}
+	imageFile, _ := c.FormFile("image") // Image is optional
 
 	updates := make(map[string]any)
 	if username != "" {
@@ -77,6 +72,6 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"user": public_user_dto.ToPublicUser(updatedUser)})
+	c.JSON(http.StatusOK, gin.H{"user": public_user_dto.ToAuthOwnerUser(updatedUser)})
 	uc.logger.Info("user updated successfully", zap.Uint("user_id", uint(userIdUint)))
 }
