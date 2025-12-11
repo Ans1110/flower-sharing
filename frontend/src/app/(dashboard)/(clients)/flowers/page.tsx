@@ -139,7 +139,7 @@ export default function Flowers() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold bg-linear-to-r from-rose-600 via-pink-600 to-blue-400 dark:to-violet-200  bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl font-bold bg-linear-to-r from-rose-600 via-pink-600 to-pink-400 bg-clip-text text-transparent mb-4">
             Beautiful Flowers
             <span className="hidden md:inline">, Beautiful Moments</span>
           </h1>

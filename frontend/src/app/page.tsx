@@ -20,7 +20,7 @@ export default function Home() {
               <Sparkles className="size-4" />
               Share the beauty of flowers
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold bg-linear-to-r from-rose-600 via-pink-600 to-violet-300 bg-clip-text text-transparent mb-6 leading-tight pb-2">
+            <h1 className="text-5xl md:text-7xl font-bold bg-linear-to-r from-rose-600 via-pink-600 dark:to-violet-300 bg-clip-text text-transparent mb-6 leading-tight pb-2">
               Flower Sharing
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
