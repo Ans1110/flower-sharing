@@ -14,7 +14,7 @@ import {
 type DropdownAvatarProps = {
   username?: string;
   email?: string;
-  avatar?: string;
+  avatar?: string | null;
   onSignOut: () => void;
 };
 
