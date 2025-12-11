@@ -2,7 +2,9 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { oauthErrorMessages } from "@/lib/errorMap";
 import { useAuthStore } from "@/store/auth";
+import { useGetMe } from "@/hooks/api/user";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,31 +13,21 @@ function OAuthCallbackContent() {
   const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
 
+  const accessToken = searchParams.get("access_token");
+  const refreshToken = searchParams.get("refresh_token");
+  const error = searchParams.get("error");
+
+  const { refetch: fetchMe } = useGetMe({
+    enabled: false,
+    retry: 1,
+  });
+
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const accessToken = searchParams.get("access_token");
-      const refreshToken = searchParams.get("refresh_token");
-      const error = searchParams.get("error");
-
       if (error) {
-        const errorMessages: Record<string, string> = {
-          invalid_state: "Invalid state token. Please try again.",
-          no_code: "No authorization code received. Please try again.",
-          token_exchange_failed: "Failed to exchange token. Please try again.",
-          user_info_failed: "Failed to get user information. Please try again.",
-          parse_failed: "Failed to parse user information. Please try again.",
-          user_creation_failed:
-            "Failed to create user account. Please try again.",
-          token_generation_failed:
-            "Failed to generate authentication token. Please try again.",
-          token_save_failed:
-            "Failed to save authentication token. Please try again.",
-          no_email:
-            "No email found in your account. Please make sure your email is public or try another method.",
-        };
-
         toast.error(
-          errorMessages[error] || "Authentication failed. Please try again."
+          oauthErrorMessages[error] ||
+            "Authentication failed. Please try again."
         );
         router.push("/login");
         return;
@@ -47,42 +39,30 @@ function OAuthCallbackContent() {
         return;
       }
 
-      try {
-        // Fetch user details from the /auth/me endpoint
-        const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
-          }/auth/me`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
 
-        if (!response.ok) {
+      try {
+        const { data: user } = await fetchMe({ throwOnError: true });
+
+        if (!user) {
           throw new Error("Failed to fetch user details");
         }
 
-        const data = await response.json();
-
-        // Store refresh token
-        localStorage.setItem("refreshToken", refreshToken);
-
-        // Store tokens and user data (API returns { user: {...} })
-        login(data.user, accessToken);
-
+        login(user, accessToken);
         toast.success("Successfully logged in!");
         router.push("/");
-      } catch (error) {
-        console.error("OAuth callback error:", error);
+      } catch (callbackError) {
+        console.error("OAuth callback error:", callbackError);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         toast.error("Failed to complete authentication. Please try again.");
         router.push("/login");
       }
     };
 
     handleOAuthCallback();
-  }, [searchParams, login, router]);
+  }, [accessToken, refreshToken, error, router, fetchMe, login]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-rose-50 via-pink-50 to-violet-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 flex items-center justify-center">

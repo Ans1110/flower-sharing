@@ -1,8 +1,17 @@
 import { api } from "@/service/api";
 import { useAuthStore } from "@/store/auth";
 import { FlowerPaginationResponseType } from "@/types/flower";
-import { UserAdminResponseType, UserPublicResponseType } from "@/types/user";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  UserAdminResponseType,
+  UserPublicResponseType,
+  UserType,
+} from "@/types/user";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
@@ -336,6 +345,30 @@ const useGetUserFollowingPosts = (
   });
 };
 
+const useGetMe = (
+  options?: Pick<
+    UseQueryOptions<UserType, AxiosError<{ error: string }>, UserType, ["me"]>,
+    "enabled" | "retry" | "meta"
+  >
+) => {
+  return useQuery<UserType, AxiosError<{ error: string }>, UserType, ["me"]>({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const res = await api.get<{ user: UserType }>("/auth/me");
+      return res.data.user;
+    },
+    retry: 1,
+    meta: {
+      onError: (error: AxiosError<{ error: string }>) => {
+        toast.error(
+          error.response?.data?.error || "Failed to fetch user information"
+        );
+      },
+    },
+    ...options,
+  });
+};
+
 export {
   useGetUserAll,
   useGetUserById,
@@ -350,4 +383,5 @@ export {
   useGetUserFollowersCount,
   useGetUserFollowingCount,
   useGetUserFollowingPosts,
+  useGetMe,
 };
