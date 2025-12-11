@@ -54,6 +54,3 @@ logs/
 *~
 *.bak
 *.orig
-
-#railway
-railway.toml
