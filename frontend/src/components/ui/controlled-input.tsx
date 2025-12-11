@@ -7,7 +7,7 @@ import { Input } from "./input";
 
 type ControlledInputProps<T extends FieldValues> = {
   name: Path<T>;
-  label?: string;
+  label?: React.ReactNode;
   containerClassName?: string;
 } & React.ComponentProps<"input">;
 
