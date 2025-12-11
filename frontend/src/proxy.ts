@@ -8,14 +8,20 @@ export function proxy(request: NextRequest) {
 
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
-  const userRole = request.cookies.get("role")?.value;
-
-  // Only check admin routes - let client-side handle authentication for other routes
-  if (isAdminRoute && userRole !== "admin") {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Skip check for non-admin routes
+  if (!isAdminRoute) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  // Check role cookie (set by frontend auth store)
+  const userRole = request.cookies.get("role")?.value;
+
+  if (userRole === "admin") {
+    return NextResponse.next();
+  }
+
+  // Redirect non-admin users to home
+  return NextResponse.redirect(new URL("/", request.url));
 }
 
 // Configure which routes use this proxy

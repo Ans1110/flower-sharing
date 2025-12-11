@@ -2,6 +2,21 @@ import { UserType } from "@/types/user";
 import createStore from "@/lib/createStore";
 import { scheduleTokenRefresh } from "@/service/refreshToken";
 
+// Helper to set cookie on frontend
+function setRoleCookie(role: string | null) {
+  if (globalThis.window !== undefined) {
+    if (role) {
+      // Set cookie for 7 days, same as backend
+      document.cookie = `role=${role}; path=/; max-age=${
+        7 * 24 * 60 * 60
+      }; SameSite=Strict`;
+    } else {
+      // Delete cookie
+      document.cookie = "role=; path=/; max-age=0";
+    }
+  }
+}
+
 type AuthStateType = {
   user: UserType | null;
   isAuthenticated: boolean;
@@ -28,6 +43,8 @@ const useAuthStore = createStore<AuthStoreType>(
           localStorage.setItem("accessToken", accessToken);
           // Schedule proactive token refresh
           scheduleTokenRefresh(accessToken);
+          // Set role cookie for proxy middleware
+          setRoleCookie(user.role);
         }
         state.user = user;
         state.isAuthenticated = true;
@@ -39,6 +56,8 @@ const useAuthStore = createStore<AuthStoreType>(
           localStorage.setItem("accessToken", accessToken);
           // Schedule proactive token refresh
           scheduleTokenRefresh(accessToken);
+          // Set role cookie for proxy middleware
+          setRoleCookie(user.role);
         }
         state.user = user;
         state.isAuthenticated = true;
@@ -47,6 +66,8 @@ const useAuthStore = createStore<AuthStoreType>(
       set((state) => {
         if (globalThis.window !== undefined) {
           localStorage.removeItem("accessToken");
+          // Clear role cookie
+          setRoleCookie(null);
         }
         state.user = null;
         state.isAuthenticated = false;
