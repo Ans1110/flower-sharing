@@ -131,7 +131,11 @@ const useDeletePost = () => {
     onSuccess: ({ message }, postId) => {
       toast.success(message);
       // Invalidate all post-related queries
-      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
+      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
+      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      queryClient.invalidateQueries({ queryKey: ["post-search"] });
+      queryClient.invalidateQueries({ queryKey: ["post-likes"] });
       queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
       queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
       queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
@@ -171,7 +175,11 @@ const useLikePost = () => {
     },
     onSuccess: (_, id) => {
       // Invalidate all queries that might contain this post
-      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["post", id] });
+      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
+      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      queryClient.invalidateQueries({ queryKey: ["post-search"] });
+      queryClient.invalidateQueries({ queryKey: ["post-likes", id] });
       queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
       queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
       queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
@@ -205,7 +213,11 @@ const useDislikePost = () => {
     },
     onSuccess: (_, id) => {
       // Invalidate all queries that might contain this post
-      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["post", id] });
+      queryClient.invalidateQueries({ queryKey: ["post-pagination"] });
+      queryClient.invalidateQueries({ queryKey: ["post-all"] });
+      queryClient.invalidateQueries({ queryKey: ["post-search"] });
+      queryClient.invalidateQueries({ queryKey: ["post-likes", id] });
       queryClient.invalidateQueries({ queryKey: ["posts-by-user"] });
       queryClient.invalidateQueries({ queryKey: ["post-user-liked"] });
       queryClient.invalidateQueries({ queryKey: ["user-following-posts"] });
