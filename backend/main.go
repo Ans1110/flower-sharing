@@ -70,6 +70,8 @@ func main() {
 	tasks.StartTokenCleanup(userRepo, logger)
 	// gin setup
 	r := gin.New()
+	// attach request id early for tracing
+	r.Use(middlewares.RequestID(logger))
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
 	// http logger
