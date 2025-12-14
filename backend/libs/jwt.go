@@ -7,17 +7,45 @@ import (
 	"flower-backend/config"
 	"flower-backend/log"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )
 
-var cfg = config.LoadConfig()
-var logger = log.InitLog().Sugar()
+var (
+	cfg    *config.Config
+	logger *zap.SugaredLogger
+	once   sync.Once
+)
+
+// InitJWT allows callers to inject a shared config/logger and avoid
+// loading configuration at package init time.
+func InitJWT(c *config.Config, l *zap.SugaredLogger) {
+	if c != nil {
+		cfg = c
+	}
+	if l != nil {
+		logger = l
+	}
+	initConfig()
+}
+
+func initConfig() {
+	once.Do(func() {
+		if cfg == nil {
+			cfg = config.LoadConfig()
+		}
+		if logger == nil {
+			logger = log.InitLog().Sugar()
+		}
+	})
+}
 
 // GenerateAccessToken generates an access token with user ID (backward compatible)
 func GenerateAccessToken(UserId uint) string {
+	initConfig()
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": UserId,
 		"exp": time.Now().Add(cfg.JWTExpiry).Unix(),
@@ -32,6 +60,7 @@ func GenerateAccessToken(UserId uint) string {
 
 // GenerateRefreshToken generates a refresh token with user ID (backward compatible)
 func GenerateRefreshToken(UserId uint) string {
+	initConfig()
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": UserId,
 		"exp": time.Now().Add(cfg.JWTRefreshExpiry).Unix(),
@@ -54,6 +83,7 @@ func GenerateRandomString(length int) string {
 }
 
 func VerifyAccessToken(tokenString string) (uint, error) {
+	initConfig()
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -82,6 +112,7 @@ func VerifyAccessToken(tokenString string) (uint, error) {
 }
 
 func VerifyRefreshToken(tokenString string) (uint, error) {
+	initConfig()
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
