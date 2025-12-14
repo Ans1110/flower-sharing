@@ -20,6 +20,7 @@ import {
   ChevronFirst,
   ChevronLast,
   Heart,
+  Loader2,
   Plus,
   Search,
   X,
@@ -119,16 +120,10 @@ export default function Flowers() {
 
   if (isLoading && !searchQuery) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-rose-50 via-pink-50 to-violet-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 py-12 px-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 border-4 border-rose-200 dark:border-rose-800 rounded-full animate-spin"></div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Loading flowers...
-              </p>
-            </div>
-          </div>
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading flowers...</p>
         </div>
       </div>
     );
