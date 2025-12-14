@@ -5,6 +5,7 @@ import (
 	"flower-backend/libs"
 	"flower-backend/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -62,12 +63,14 @@ func (ac *authController) Login(c *gin.Context) {
 	// generate access token
 	accessToken := libs.GenerateAccessToken(user.ID)
 	refreshToken := libs.GenerateRefreshToken(user.ID)
+	expiresAt := time.Now().Add(ac.cfg.JWTRefreshExpiry)
 
 	// create token
 	database.DB.Where("user_id = ?", user.ID).Delete(&models.Token{})
 	token := models.Token{
-		Token:  refreshToken,
-		UserID: user.ID,
+		Token:     refreshToken,
+		UserID:    user.ID,
+		ExpiresAt: expiresAt,
 	}
 
 	if err := database.DB.Create(&token).Error; err != nil {

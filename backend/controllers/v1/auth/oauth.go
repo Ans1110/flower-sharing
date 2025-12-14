@@ -141,8 +141,9 @@ func (ctrl *authController) GoogleCallback(c *gin.Context) {
 
 	// Save refresh token
 	tokenModel := &models.Token{
-		UserID: user.ID,
-		Token:  refreshToken,
+		UserID:    user.ID,
+		Token:     refreshToken,
+		ExpiresAt: time.Now().Add(ctrl.cfg.JWTRefreshExpiry),
 	}
 	if err := ctrl.svc.CreateToken(tokenModel); err != nil {
 		ctrl.logger.Errorf("Failed to save refresh token: %v", err)
@@ -320,8 +321,9 @@ func (ctrl *authController) GithubCallback(c *gin.Context) {
 
 	// Save refresh token
 	tokenModel := &models.Token{
-		UserID: user.ID,
-		Token:  refreshToken,
+		UserID:    user.ID,
+		Token:     refreshToken,
+		ExpiresAt: time.Now().Add(ctrl.cfg.JWTRefreshExpiry),
 	}
 	if err := ctrl.svc.CreateToken(tokenModel); err != nil {
 		ctrl.logger.Errorf("Failed to save refresh token: %v", err)

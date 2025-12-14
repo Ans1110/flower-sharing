@@ -7,7 +7,9 @@ import (
 	"flower-backend/log"
 	"flower-backend/middlewares"
 	"flower-backend/models"
+	user_repository "flower-backend/repositories/v1/user"
 	v1Routes "flower-backend/routes/v1"
+	"flower-backend/tasks"
 	"flower-backend/utils"
 	"net/http"
 	"os"
@@ -62,6 +64,10 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("database migrated")
+
+	// periodic cleanup of expired refresh tokens to prevent bloat
+	userRepo := user_repository.NewUserRepository(db, cfg, logger.Sugar())
+	tasks.StartTokenCleanup(userRepo, logger)
 	// gin setup
 	r := gin.New()
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
@@ -97,11 +103,14 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"},
+		AllowHeaders:     []string{"Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "X-CSRF-Token", "X-CSRFToken"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	// CSRF protection - double submit cookie for unsafe methods
+	r.Use(middlewares.CSRFProtection(cfg, logger))
 
 	// Rate limiter: 60 requests per minute per IP
 	r.Use(middlewares.RateLimiter())

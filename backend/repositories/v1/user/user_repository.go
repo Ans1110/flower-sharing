@@ -3,6 +3,7 @@ package user_repository
 import (
 	"flower-backend/config"
 	"flower-backend/models"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -27,6 +28,7 @@ type UserRepository interface {
 	GetFollowersCount(userID uint) (int64, error)
 	GetFollowingCount(userID uint) (int64, error)
 	GetFollowingPosts(userID uint, page, limit int) ([]models.Post, int64, error)
+	DeleteExpiredTokens(now time.Time) (int64, error)
 }
 
 type userRepository struct {

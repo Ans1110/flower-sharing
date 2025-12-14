@@ -6,6 +6,7 @@ import (
 	"flower-backend/libs"
 	"flower-backend/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -37,6 +38,16 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"code":    "AuthenticationError",
 			"message": "Invalid refresh token",
+		})
+		return
+	}
+
+	if time.Now().After(token.ExpiresAt) {
+		// remove expired token eagerly
+		database.DB.Delete(&token)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    "AuthenticationError",
+			"message": "Refresh token expired, please login again",
 		})
 		return
 	}
