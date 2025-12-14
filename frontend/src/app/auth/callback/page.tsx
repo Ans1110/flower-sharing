@@ -53,7 +53,9 @@ function OAuthCallbackContent() {
         toast.success("Successfully logged in!");
         router.push("/");
       } catch (callbackError) {
-        console.error("OAuth callback error:", callbackError);
+        if (process.env.NODE_ENV !== "production") {
+          console.error("OAuth callback error:", callbackError);
+        }
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         toast.error("Failed to complete authentication. Please try again.");

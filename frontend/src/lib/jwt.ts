@@ -24,7 +24,9 @@ export function decodeJWT(token: string): JWTPayload | null {
     const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(decoded) as JWTPayload;
   } catch (error) {
-    console.error("Failed to decode JWT:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to decode JWT:", error);
+    }
     return null;
   }
 }
