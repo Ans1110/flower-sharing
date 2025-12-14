@@ -17,7 +17,6 @@ A full-stack social media application for sharing flowers and connecting with ot
 - **Data Fetching**: TanStack Query (React Query)
 - **Forms**: React Hook Form + Zod
 - **UI Components**: shadcn/ui, Radix UI
-- **Animations**: Motion (Framer Motion)
 
 ### Backend
 - **Language**: Go 1.24.5
