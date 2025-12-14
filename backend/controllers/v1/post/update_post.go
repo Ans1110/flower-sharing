@@ -33,24 +33,24 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 
 	userId := c.GetUint("user_id")
 	ownership, err := pc.svc.CheckPostOwnership(uint(postIdUint), userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check post ownership"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to check post ownership")
 		return
 	}
 	if !ownership {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this post"})
+		utils.JSONError(c, http.StatusForbidden, "Forbidden", "You are not the owner of this post")
 		return
 	}
 
 	selectQuery := c.Query("select")
 	if selectQuery == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Select fields are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Select fields are required")
 		return
 	}
 	selectFields := strings.Split(selectQuery, ",")
@@ -65,7 +65,7 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 			imageFile, err = c.FormFile("image")
 			if err != nil {
 				pc.logger.Error("failed to get image file", zap.Error(err))
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
+				utils.JSONError(c, http.StatusBadRequest, "", "Failed to get image file")
 				return
 			}
 			break
@@ -82,7 +82,7 @@ func (pc *postController) UpdatePostByIDWithSelect(c *gin.Context) {
 
 	updatedPost, err := pc.svc.UpdatePostByID(uint(postIdUint), userId, imageFile, updates, selectFields)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to update post")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"post": updatedPost})

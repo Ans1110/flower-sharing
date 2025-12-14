@@ -14,16 +14,16 @@ func (uc *adminUserController) DeleteUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	if err := uc.svc.DeleteUserByID(uint(userIdUint)); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.String("user_id", userId))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})

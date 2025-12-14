@@ -28,26 +28,26 @@ func (pc *postController) DeletePostByID(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	userId := c.GetUint("user_id")
 	ownership, err := pc.svc.CheckPostOwnership(uint(postIdUint), userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check post ownership"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to check post ownership")
 		return
 	}
 	if !ownership {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this post"})
+		utils.JSONError(c, http.StatusForbidden, "Forbidden", "You are not the owner of this post")
 		return
 	}
 	if err := pc.svc.DeletePostByID(uint(postIdUint), userId); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			pc.logger.Error("post not found", zap.String("post_id", postId))
-			c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "Post not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete post"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to delete post")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})

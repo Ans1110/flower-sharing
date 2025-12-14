@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -169,4 +170,38 @@ func UpdateSwaggerHost(apiBaseURL string) {
 
 	// Update Swagger host
 	docs.SwaggerInfo.Host = host
+}
+
+type ErrorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func JSONError(c *gin.Context, status int, code, message string) {
+	if code == "" {
+		code = defaultErrorCode(status)
+	}
+	c.JSON(status, ErrorResponse{
+		Code:    code,
+		Message: message,
+	})
+}
+
+func defaultErrorCode(status int) string {
+	switch status {
+	case 400:
+		return "BadRequest"
+	case 401:
+		return "Unauthorized"
+	case 403:
+		return "Forbidden"
+	case 404:
+		return "NotFound"
+	case 422:
+		return "UnprocessableEntity"
+	case 429:
+		return "TooManyRequests"
+	default:
+		return "ServerError"
+	}
 }

@@ -16,13 +16,13 @@ func (uc *adminUserController) UpdateUserByIDWithSelect(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 
 	selectQuery := c.Query("select")
 	if selectQuery == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Select fields are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Select fields are required")
 		return
 	}
 	selectFields := strings.Split(selectQuery, ",")
@@ -48,7 +48,7 @@ func (uc *adminUserController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 			updatedUser, err := uc.svc.UpdateUserByIDWithSelect(uint(userIdUint), updates, nil, selectFields)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to update user")
 				return
 			}
 			c.JSON(http.StatusOK, gin.H{"user": admin_user_dto.ToUserAdminDTO(updatedUser)})
@@ -68,7 +68,7 @@ func (uc *adminUserController) UpdateUserByIDWithSelect(c *gin.Context) {
 	updatedUser, err := uc.svc.UpdateUserByIDWithSelect(uint(userIdUint), updates, imageFile, selectFields)
 	if err != nil {
 		uc.logger.Error("failed to update user", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to update user")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": admin_user_dto.ToUserAdminDTO(updatedUser)})

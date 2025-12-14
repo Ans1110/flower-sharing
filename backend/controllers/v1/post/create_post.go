@@ -2,6 +2,7 @@ package post_controller
 
 import (
 	"flower-backend/models"
+	"flower-backend/utils"
 	"io"
 	"net/http"
 
@@ -31,12 +32,12 @@ func (pc *postController) CreatePost(c *gin.Context) {
 	imageFile, err := c.FormFile("image")
 	if err != nil {
 		pc.logger.Error("failed to get image file", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get image file"})
+		utils.JSONError(c, http.StatusBadRequest, "", "Failed to get image file")
 		return
 	}
 
 	if title == "" || content == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Title and content are required"})
+		utils.JSONError(c, http.StatusBadRequest, "", "Title and content are required")
 		return
 	}
 
@@ -46,7 +47,7 @@ func (pc *postController) CreatePost(c *gin.Context) {
 		src, err := imageFile.Open()
 		if err != nil {
 			pc.logger.Error("failed to open image file", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open image file"})
+			utils.JSONError(c, http.StatusInternalServerError, "", "Failed to open image file")
 			return
 		}
 		defer src.Close()
@@ -54,14 +55,14 @@ func (pc *postController) CreatePost(c *gin.Context) {
 		buffer, err := io.ReadAll(src)
 		if err != nil {
 			pc.logger.Error("failed to read image file", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read image file"})
+			utils.JSONError(c, http.StatusInternalServerError, "", "Failed to read image file")
 			return
 		}
 
 		imageURL, err = pc.svc.UploadImage(buffer, userId)
 		if err != nil {
 			pc.logger.Error("failed to upload image", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image"})
+			utils.JSONError(c, http.StatusInternalServerError, "", "Failed to upload image")
 			return
 		}
 	}
@@ -74,7 +75,7 @@ func (pc *postController) CreatePost(c *gin.Context) {
 	})
 	if err != nil {
 		pc.logger.Error("failed to create post", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create post"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to create post")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"post": post})

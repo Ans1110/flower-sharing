@@ -26,13 +26,13 @@ func (pc *postController) LikePost(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	userId := c.GetUint("user_id")
 	if userId == 0 {
 		pc.logger.Error("user_id not found in context")
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.JSONError(c, http.StatusUnauthorized, "Unauthorized", "Unauthorized")
 		return
 	}
 
@@ -43,7 +43,7 @@ func (pc *postController) LikePost(c *gin.Context) {
 			pc.logger.Info("post already liked",
 				zap.Uint("post_id", uint(postIdUint)),
 				zap.Uint("user_id", userId))
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 			return
 		}
 
@@ -53,7 +53,7 @@ func (pc *postController) LikePost(c *gin.Context) {
 			zap.Uint("user_id", userId),
 			zap.Error(err))
 
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to like post"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to like post")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post liked successfully"})
@@ -77,12 +77,12 @@ func (pc *postController) DislikePost(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	userId := c.GetUint("user_id")
 	if err := pc.svc.DislikePost(uint(postIdUint), userId); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to dislike post"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to dislike post")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post disliked successfully"})
@@ -105,12 +105,12 @@ func (pc *postController) GetPostLikes(c *gin.Context) {
 	postId := c.Param("id")
 	postIdUint, err := utils.ParseUint(postId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	likes, err := pc.svc.GetPostLikes(uint(postIdUint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get post likes"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to get post likes")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"likes": likes})
@@ -133,24 +133,24 @@ func (pc *postController) GetUserLikedPosts(c *gin.Context) {
 	userId := c.Param("user_id")
 	userIdUint, err := utils.ParseUint(userId, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	page := c.Query("page")
 	limit := c.Query("limit")
 	pageUint, err := utils.ParseUint(page, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	limitUint, err := utils.ParseUint(limit, pc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	posts, total, err := pc.svc.GetUserLikedPosts(uint(userIdUint), int(pageUint), int(limitUint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user liked posts"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to get user liked posts")
 		return
 	}
 	postsDTO := public_dto.ToPublicPosts(posts)

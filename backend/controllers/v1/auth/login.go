@@ -4,6 +4,7 @@ import (
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"net/http"
 	"time"
 
@@ -35,7 +36,7 @@ type LoginRequest struct {
 func (ac *authController) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Email and password are required")
 		return
 	}
 
@@ -46,17 +47,17 @@ func (ac *authController) Login(c *gin.Context) {
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			ac.logger.Error("user not found", zap.String("email", email))
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+			utils.JSONError(c, http.StatusUnauthorized, "InvalidCredentials", "Invalid email or password")
 			return
 		}
 		ac.logger.Error("failed to get user", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Internal server error")
 		return
 	}
 
 	// compare password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		utils.JSONError(c, http.StatusUnauthorized, "InvalidCredentials", "Invalid email or password")
 		return
 	}
 
@@ -75,7 +76,7 @@ func (ac *authController) Login(c *gin.Context) {
 
 	if err := database.DB.Create(&token).Error; err != nil {
 		ac.logger.Error("failed to create token", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to create token")
 		return
 	}
 

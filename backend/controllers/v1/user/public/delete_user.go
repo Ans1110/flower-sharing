@@ -27,25 +27,25 @@ func (uc *userController) DeleteUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	ownership, err := uc.svc.CheckUserOwnership(uint(userIdUint), c.GetUint("user_id"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check user ownership"})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to check user ownership")
 		return
 	}
 	if !ownership {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this user"})
+		utils.JSONError(c, http.StatusForbidden, "Forbidden", "You are not the owner of this user")
 		return
 	}
 	if err := uc.svc.DeleteUserByID(uint(userIdUint)); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.String("user_id", userId))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to delete user")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})

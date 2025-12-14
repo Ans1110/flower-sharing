@@ -28,17 +28,17 @@ func (uc *userController) GetUserByID(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	user, err := uc.svc.GetUserByID(uint(userIdUint))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.String("user_id", userId))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 
@@ -75,17 +75,17 @@ func (uc *userController) GetUserByID(c *gin.Context) {
 func (uc *userController) GetUserByEmail(c *gin.Context) {
 	email := c.Param("email")
 	if !utils.ValidateEmail(email) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Invalid email")
 		return
 	}
 	user, err := uc.svc.GetUserByEmail(email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.String("email", email))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": publicuserdto.ToPublicUser(user)})
@@ -108,17 +108,17 @@ func (uc *userController) GetUserByEmail(c *gin.Context) {
 func (uc *userController) GetUserByUsername(c *gin.Context) {
 	username := c.Param("username")
 	if !utils.ValidateUsername(username) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Invalid username")
 		return
 	}
 	user, err := uc.svc.GetUserByUsername(username)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.String("username", username))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": publicuserdto.ToPublicUser(user)})
@@ -138,7 +138,7 @@ func (uc *userController) GetUserByUsername(c *gin.Context) {
 func (uc *userController) GetUserAll(c *gin.Context) {
 	users, err := uc.svc.GetUserAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": publicuserdto.ToPublicUsers(users)})
@@ -163,12 +163,12 @@ func (uc *userController) GetUserByIDWithSelect(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 	selectFieldsString := c.Query("select")
 	if selectFieldsString == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Select fields are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Select fields are required")
 		return
 	}
 	selectFields := publicuserdto.EnsurePublicUserSelectFields(strings.Split(selectFieldsString, ","))
@@ -176,10 +176,10 @@ func (uc *userController) GetUserByIDWithSelect(c *gin.Context) {
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			uc.logger.Error("user not found", zap.Uint("user_id", uint(userIdUint)))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": publicuserdto.ToPublicUser(user)})

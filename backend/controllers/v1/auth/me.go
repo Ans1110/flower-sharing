@@ -1,6 +1,7 @@
 package auth_controller
 
 import (
+	"flower-backend/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func (ac *authController) Me(c *gin.Context) {
 	// Get user ID from context (set by auth middleware as "user_id")
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		utils.JSONError(c, http.StatusUnauthorized, "Unauthorized", "Unauthorized")
 		return
 	}
 
@@ -31,11 +32,11 @@ func (ac *authController) Me(c *gin.Context) {
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			ac.logger.Error("user not found", zap.Any("user_id", userID))
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			utils.JSONError(c, http.StatusNotFound, "NotFound", "User not found")
 			return
 		}
 		ac.logger.Error("failed to get user", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 

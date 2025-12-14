@@ -5,6 +5,7 @@ import (
 	"flower-backend/database"
 	"flower-backend/libs"
 	"flower-backend/models"
+	"flower-backend/utils"
 	"net/http"
 	"time"
 
@@ -25,30 +26,21 @@ import (
 func (ac *authController) RefreshToken(c *gin.Context) {
 	refreshToken, err := c.Cookie("refreshToken")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    "AuthenticationError",
-			"message": "Invalid refresh token",
-		})
+		utils.JSONError(c, http.StatusUnauthorized, "AuthenticationError", "Invalid refresh token")
 		return
 	}
 
 	// Check if token exists in database
 	var token models.Token
 	if err := database.DB.Where("token = ?", refreshToken).First(&token).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    "AuthenticationError",
-			"message": "Invalid refresh token",
-		})
+		utils.JSONError(c, http.StatusUnauthorized, "AuthenticationError", "Invalid refresh token")
 		return
 	}
 
 	if time.Now().After(token.ExpiresAt) {
 		// remove expired token eagerly
 		database.DB.Delete(&token)
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    "AuthenticationError",
-			"message": "Refresh token expired, please login again",
-		})
+		utils.JSONError(c, http.StatusUnauthorized, "AuthenticationError", "Refresh token expired, please login again")
 		return
 	}
 
@@ -57,18 +49,12 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 	if err != nil {
 		// Check if it's a token expiration error
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":    "AuthenticationError",
-				"message": "Refresh token expired, please login again",
-			})
+			utils.JSONError(c, http.StatusUnauthorized, "AuthenticationError", "Refresh token expired, please login again")
 			return
 		}
 
 		// Invalid token error
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    "AuthenticationError",
-			"message": "Invalid refresh token",
-		})
+		utils.JSONError(c, http.StatusUnauthorized, "AuthenticationError", "Invalid refresh token")
 		return
 	}
 
@@ -76,10 +62,7 @@ func (ac *authController) RefreshToken(c *gin.Context) {
 	accessToken := libs.GenerateAccessToken(userId)
 	if accessToken == "" {
 		ac.logger.Error("Error during refresh token: failed to generate access token")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    "ServerError",
-			"message": "Internal server error",
-		})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Internal server error")
 		return
 	}
 

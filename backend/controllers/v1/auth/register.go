@@ -34,7 +34,7 @@ type RegisterRequest struct {
 func (ac *authController) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username, email and password are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Username, email and password are required")
 		return
 	}
 
@@ -43,30 +43,30 @@ func (ac *authController) Register(c *gin.Context) {
 	password := req.Password
 
 	if !utils.ValidateUsername(username) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Invalid username")
 		return
 	}
 
 	if !utils.ValidateEmail(email) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Invalid email")
 		return
 	}
 
 	if !utils.ValidatePassword(password) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid password"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Invalid password")
 		return
 	}
 
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		ac.logger.Error("failed to hash password", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to hash password")
 		return
 	}
 
 	user, err := ac.svc.RegisterUser(username, email, hashedPassword, nil)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to register user")
 		return
 	}
 
@@ -84,7 +84,7 @@ func (ac *authController) Register(c *gin.Context) {
 
 	if err := ac.svc.CreateToken(&token); err != nil {
 		ac.logger.Error("failed to create token", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token"})
+		utils.JSONError(c, http.StatusInternalServerError, "", "Failed to create token")
 		return
 	}
 

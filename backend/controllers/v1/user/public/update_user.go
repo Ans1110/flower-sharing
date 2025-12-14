@@ -34,23 +34,23 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 	userId := c.Param("id")
 	userIdUint, err := utils.ParseUint(userId, uc.logger)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", err.Error())
 		return
 	}
 
 	ownership, err := uc.svc.CheckUserOwnership(uint(userIdUint), c.GetUint("user_id"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check user ownership"})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to check user ownership")
 		return
 	}
 	if !ownership {
-		c.JSON(http.StatusForbidden, gin.H{"error": "You are not the owner of this user"})
+		utils.JSONError(c, http.StatusForbidden, "Forbidden", "You are not the owner of this user")
 		return
 	}
 
 	selectQuery := c.Query("select")
 	if selectQuery == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Select fields are required"})
+		utils.JSONError(c, http.StatusBadRequest, "ValidationError", "Select fields are required")
 		return
 	}
 	selectFields := strings.Split(selectQuery, ",")
@@ -69,7 +69,7 @@ func (uc *userController) UpdateUserByIDWithSelect(c *gin.Context) {
 
 	updatedUser, err := uc.svc.UpdateUserByIDWithSelect(uint(userIdUint), updates, imageFile, selectFields)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.JSONError(c, http.StatusInternalServerError, "ServerError", "Failed to update user")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": public_user_dto.ToAuthOwnerUser(updatedUser)})
