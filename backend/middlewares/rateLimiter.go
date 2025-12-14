@@ -12,11 +12,17 @@ import (
 )
 
 type rateLimiter struct {
-	requests map[string][]time.Time
+	requests map[string]*rateLimiterEntry
 	mu       sync.RWMutex
 	limit    int
 	window   time.Duration
 	cleanup  *time.Ticker
+	ttl      time.Duration
+}
+
+type rateLimiterEntry struct {
+	requests []time.Time
+	expires  time.Time
 }
 
 var (
@@ -32,10 +38,11 @@ var (
 func RateLimiter() gin.HandlerFunc {
 	once.Do(func() {
 		limiter = &rateLimiter{
-			requests: make(map[string][]time.Time),
+			requests: make(map[string]*rateLimiterEntry),
 			limit:    60,
 			window:   1 * time.Minute,
 			cleanup:  time.NewTicker(5 * time.Minute),
+			ttl:      15 * time.Minute,
 		}
 
 		// Start cleanup goroutine to remove old entries
@@ -49,15 +56,25 @@ func RateLimiter() gin.HandlerFunc {
 		limiter.mu.Lock()
 		defer limiter.mu.Unlock()
 
+		entry := limiter.requests[ip]
+
 		// Clean up old requests outside the time window
-		limiter.cleanupIP(ip, now)
+		entry = limiter.cleanupIP(ip, entry, now)
+
+		if entry == nil {
+			entry = &rateLimiterEntry{
+				requests: make([]time.Time, 0, 4),
+				expires:  now.Add(limiter.ttl),
+			}
+			limiter.requests[ip] = entry
+		}
 
 		// Count requests in the current window
-		count := len(limiter.requests[ip])
+		count := len(entry.requests)
 
 		if count >= limiter.limit {
 			// Calculate reset time (when the oldest request expires)
-			oldestRequest := limiter.requests[ip][0]
+			oldestRequest := entry.requests[0]
 			resetTime := oldestRequest.Add(limiter.window)
 
 			// Set standard rate-limit headers (RFC 7239)
@@ -87,15 +104,16 @@ func RateLimiter() gin.HandlerFunc {
 		}
 
 		// Add current request
-		limiter.requests[ip] = append(limiter.requests[ip], now)
+		entry.requests = append(entry.requests, now)
+		entry.expires = now.Add(limiter.ttl)
 
 		// Calculate remaining requests
 		remaining := limiter.limit - count - 1
 
 		// Calculate reset time
 		var resetTime time.Time
-		if len(limiter.requests[ip]) > 0 {
-			oldestRequest := limiter.requests[ip][0]
+		if len(entry.requests) > 0 {
+			oldestRequest := entry.requests[0]
 			resetTime = oldestRequest.Add(limiter.window)
 		} else {
 			resetTime = now.Add(limiter.window)
@@ -111,13 +129,16 @@ func RateLimiter() gin.HandlerFunc {
 }
 
 // cleanupIP removes requests older than the time window for a specific IP
-func (rl *rateLimiter) cleanupIP(ip string, now time.Time) {
-	requests := rl.requests[ip]
+func (rl *rateLimiter) cleanupIP(ip string, entry *rateLimiterEntry, now time.Time) *rateLimiterEntry {
+	if entry == nil {
+		return nil
+	}
+
 	cutoff := now.Add(-rl.window)
 
 	// Find the first request that's still within the window
 	validStart := 0
-	for i, reqTime := range requests {
+	for i, reqTime := range entry.requests {
 		if reqTime.After(cutoff) {
 			validStart = i
 			break
@@ -126,11 +147,21 @@ func (rl *rateLimiter) cleanupIP(ip string, now time.Time) {
 
 	// Keep only valid requests
 	if validStart > 0 {
-		rl.requests[ip] = requests[validStart:]
-	} else if len(requests) > 0 && requests[0].Before(cutoff) {
+		entry.requests = entry.requests[validStart:]
+	} else if len(entry.requests) > 0 && entry.requests[0].Before(cutoff) {
 		// All requests are old, clear the slice
-		rl.requests[ip] = []time.Time{}
+		entry.requests = []time.Time{}
 	}
+
+	if len(entry.requests) == 0 {
+		delete(rl.requests, ip)
+		return nil
+	}
+
+	// Refresh TTL when requests remain
+	entry.expires = now.Add(rl.ttl)
+
+	return entry
 }
 
 // cleanupOldEntries periodically removes IPs with no recent requests
@@ -140,14 +171,15 @@ func (rl *rateLimiter) cleanupOldEntries() {
 		now := time.Now()
 		cutoff := now.Add(-rl.window)
 
-		for ip, requests := range rl.requests {
-			if len(requests) == 0 {
+		for ip, entry := range rl.requests {
+			// Remove entries that have exceeded TTL regardless of window
+			if entry == nil || now.After(entry.expires) {
 				delete(rl.requests, ip)
 				continue
 			}
 
 			// Check if all requests are old
-			if len(requests) > 0 && requests[len(requests)-1].Before(cutoff) {
+			if len(entry.requests) > 0 && entry.requests[len(entry.requests)-1].Before(cutoff) {
 				delete(rl.requests, ip)
 			}
 		}
